@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS `vehiculos` (
   `placa` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `marca` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `modelo` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `anio` year DEFAULT NULL,
+  `año` year DEFAULT NULL,
   `color` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `vin` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `tipo_motor` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
