@@ -29,7 +29,7 @@ class Orden extends BaseModel {
             $stmt = $this->db->prepare("
                 SELECT o.*, c.nombre as cliente_nombre, c.telefono as cliente_telefono, c.direccion as cliente_direccion,
                        v.placa as vehiculo_placa, v.marca as vehiculo_marca, v.modelo as vehiculo_modelo,
-                       v.año as vehiculo_año, v.color as vehiculo_color
+                       v.`año` as vehiculo_año, v.color as vehiculo_color
                 FROM ordenes_servicio o 
                 LEFT JOIN clientes c ON o.cliente_id = c.id
                 LEFT JOIN vehiculos v ON o.vehiculo_id = v.id

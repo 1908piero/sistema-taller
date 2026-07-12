@@ -45,9 +45,13 @@ class PagoController extends BaseController {
             $pagoModel = new Pago();
             if ($pagoModel->create($data)) {
                 $ref = $_POST['ref'] ?? '/pagos';
+                $allowed = ['/pagos', '/pagos/caja'];
+                if (!in_array($ref, $allowed)) $ref = '/pagos';
                 header("Location: $ref");
+                exit;
             } else {
                 header('Location: /pagos?msg=error');
+                exit;
             }
         }
     }

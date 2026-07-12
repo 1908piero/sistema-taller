@@ -44,8 +44,10 @@ class VehiculoController extends BaseController {
             $vehiculoModel = new Vehiculo();
             if ($vehiculoModel->create($data)) {
                 header('Location: /vehiculos?msg=guardado');
+                exit;
             } else {
                 header('Location: /vehiculos?msg=error');
+                exit;
             }
         }
     }
@@ -68,8 +70,10 @@ class VehiculoController extends BaseController {
             $vehiculoModel = new Vehiculo();
             if ($vehiculoModel->update($data)) {
                 header('Location: /vehiculos?msg=actualizado');
+                exit;
             } else {
                 header('Location: /vehiculos?msg=error');
+                exit;
             }
         }
     }
@@ -84,8 +88,10 @@ class VehiculoController extends BaseController {
             
             if (isset($_SERVER['HTTP_REFERER'])) {
                 header("Location: " . $_SERVER['HTTP_REFERER']);
+                exit;
             } else {
                 header('Location: /vehiculos');
+                exit;
             }
         }
     }
