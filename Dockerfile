@@ -1,0 +1,28 @@
+FROM php:8.2-apache
+
+RUN a2enmod rewrite
+
+RUN docker-php-ext-install pdo pdo_mysql
+
+RUN apt-get update && apt-get install -y \
+    git unzip libicu-dev && \
+    docker-php-ext-install intl && \
+    apt-get clean
+
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+COPY . .
+
+RUN composer install --no-interaction --prefer-dist --no-dev || true
+
+RUN mkdir -p uploads/logo uploads/productos && \
+    chmod -R 777 uploads && \
+    chown -R www-data:www-data uploads vendor
+
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["apache2-foreground"]

@@ -1,0 +1,54 @@
+services:
+
+  php:
+    build: .
+    container_name: taller_php
+    ports:
+      - "8080:80"
+    environment:
+      DB_HOST: mysql
+      DB_NAME: taller_db
+      DB_USER: taller_user
+      DB_PASS: taller_pass
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - .:/var/www/html
+
+  mysql:
+    image: mysql:8.0
+    container_name: taller_mysql
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: taller_db
+      MYSQL_USER: taller_user
+      MYSQL_PASSWORD: taller_pass
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./bk_basededatos.sql:/docker-entrypoint-initdb.d/01_base.sql
+      - ./bk_migracion.sql:/docker-entrypoint-initdb.d/02_migracion.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpass"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: taller_phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: taller_user
+      PMA_PASSWORD: taller_pass
+      UPLOAD_LIMIT: 100M
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysql_data:

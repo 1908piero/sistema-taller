@@ -1,0 +1,8 @@
+.git
+.gitignore
+.gitattributes
+node_modules
+sistema-taller/sistema-taller
+*.md
+.DS_Store
+*.log
