@@ -18,12 +18,13 @@ COPY . .
 RUN composer install --no-interaction --prefer-dist --no-dev || true
 
 RUN mkdir -p uploads/logo uploads/productos && \
-    chmod -R 777 uploads && \
-    chown -R www-data:www-data uploads vendor
+    chmod -R 777 uploads
 
-RUN rm -f /etc/apache2/mods-enabled/mpm_*.load /etc/apache2/mods-enabled/mpm_*.conf && \
-    ln -s /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/ && \
-    ln -s /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf && \
+    echo "" > /etc/apache2/mods-enabled/mpm_event.load 2>/dev/null; \
+    echo "" > /etc/apache2/mods-enabled/mpm_event.conf 2>/dev/null; \
+    echo "" > /etc/apache2/mods-enabled/mpm_worker.load 2>/dev/null; \
+    echo "" > /etc/apache2/mods-enabled/mpm_worker.conf 2>/dev/null
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
