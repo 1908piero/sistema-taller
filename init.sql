@@ -205,3 +205,6 @@ INSERT INTO `usuarios` (`id`, `nombre`, `email`, `password`, `rol`, `estado`) VA
 
 INSERT INTO `configuracion` (`id`, `nombre_sistema`, `moneda`, `simbolo_moneda`, `impuesto`) VALUES
 (1, 'Taller Pro', 'PEN', 'S/', 18.00);
+
+INSERT INTO `clientes` (`id`, `nombre`, `telefono`, `direccion`, `email`) VALUES
+(1, 'Cliente Demo', '999888777', 'Av. Principal 123', 'cliente@demo.com');
