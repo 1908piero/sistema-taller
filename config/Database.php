@@ -13,11 +13,11 @@ class Database {
     public $conn;
 
     public function __construct() {
-        $this->host = getenv('DB_HOST') ?: getenv('MYSQL_HOST') ?: 'localhost';
-        $this->db_name = getenv('DB_NAME') ?: getenv('MYSQL_DATABASE') ?: 'taller_db';
-        $this->username = getenv('DB_USER') ?: getenv('MYSQL_USER') ?: 'root';
-        $this->password = getenv('DB_PASS') ?: getenv('MYSQL_PASSWORD') ?: '';
-        $this->port = getenv('DB_PORT') ?: getenv('MYSQL_PORT') ?: '3306';
+        $this->host = getenv('DB_HOST') ?: getenv('MYSQL_HOST') ?: getenv('MYSQLHOST') ?: 'localhost';
+        $this->db_name = getenv('DB_NAME') ?: getenv('MYSQL_DATABASE') ?: getenv('MYSQLDATABASE') ?: 'taller_db';
+        $this->username = getenv('DB_USER') ?: getenv('MYSQL_USER') ?: getenv('MYSQLUSER') ?: 'root';
+        $this->password = getenv('DB_PASS') ?: getenv('MYSQL_PASSWORD') ?: getenv('MYSQLPASSWORD') ?: '';
+        $this->port = getenv('DB_PORT') ?: getenv('MYSQL_PORT') ?: getenv('MYSQLPORT') ?: '3306';
 
         if ($url = getenv('MYSQL_URL')) {
             $parts = parse_url($url);
