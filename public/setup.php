@@ -13,6 +13,8 @@ if (!$conn) {
 
 echo "<h2>Instalando base de datos...</h2>";
 
+$conn->exec("SET FOREIGN_KEY_CHECKS = 0");
+
 $sql = file_get_contents(__DIR__ . '/../bk_basededatos.sql');
 $sql .= "\n\n" . file_get_contents(__DIR__ . '/../bk_migracion.sql');
 
@@ -22,14 +24,15 @@ $count = 0;
 $errors = [];
 
 foreach ($lines as $line) {
-    if (preg_match('/^(CREATE DATABASE|USE|DELIMITER)/i', trim($line))) continue;
-    if (preg_match('/^\/\*!/', trim($line))) continue;
-    if (preg_match('/^--/', trim($line))) continue;
-    if (empty(trim($line))) continue;
+    $trimmed = trim($line);
+    if (empty($trimmed)) continue;
+    if (str_starts_with($trimmed, '--')) continue;
+    if (preg_match('/^\/\*!/', $trimmed)) continue;
+    if (preg_match('/^(CREATE DATABASE|USE)/i', $trimmed)) continue;
 
     $statement .= $line . "\n";
 
-    if (str_contains(trim($line), ';')) {
+    if (str_ends_with(trim($line), ';')) {
         try {
             $conn->exec($statement);
             $count++;
@@ -40,11 +43,13 @@ foreach ($lines as $line) {
     }
 }
 
+$conn->exec("SET FOREIGN_KEY_CHECKS = 1");
+
 echo "<p style='color:green'>✓ $count sentencias ejecutadas.</p>";
 
 if ($errors) {
-    echo "<h4>Advertencias:</h4><pre>";
-    foreach (array_slice($errors, 0, 15) as $e) {
+    echo "<h4>Advertencias (ignorar si son pocas):</h4><pre>";
+    foreach (array_slice($errors, 0, 10) as $e) {
         echo htmlspecialchars($e) . "\n";
     }
     echo "</pre>";
