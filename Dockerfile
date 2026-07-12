@@ -21,8 +21,9 @@ RUN mkdir -p uploads/logo uploads/productos && \
     chmod -R 777 uploads && \
     chown -R www-data:www-data uploads vendor
 
-RUN a2dismod mpm_event mpm_worker mpm_prefork && \
-    a2enmod mpm_prefork
+RUN rm -f /etc/apache2/mods-enabled/mpm_*.load /etc/apache2/mods-enabled/mpm_*.conf && \
+    ln -s /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/ && \
+    ln -s /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
