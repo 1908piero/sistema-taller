@@ -14,7 +14,7 @@
                     <tr><th>Placa</th><td><strong><?php echo htmlspecialchars($vehiculo->placa); ?></strong></td></tr>
                     <tr><th>Marca</th><td><?php echo htmlspecialchars($vehiculo->marca); ?></td></tr>
                     <tr><th>Modelo</th><td><?php echo htmlspecialchars($vehiculo->modelo); ?></td></tr>
-                    <tr><th>Año</th><td><?php echo $vehiculo->año ?: '-'; ?></td></tr>
+                    <tr><th>Año</th><td><?php echo $vehiculo->anio ?: '-'; ?></td></tr>
                     <tr><th>Color</th><td><?php echo htmlspecialchars($vehiculo->color ?: '-'); ?></td></tr>
                     <tr><th>VIN</th><td><code><?php echo htmlspecialchars($vehiculo->vin ?: '-'); ?></code></td></tr>
                     <tr><th>Motor</th><td><?php echo htmlspecialchars($vehiculo->tipo_motor ?: '-'); ?></td></tr>

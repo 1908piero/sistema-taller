@@ -41,7 +41,7 @@
                             <td><?php echo $v->id; ?></td>
                             <td><strong><?php echo htmlspecialchars($v->placa); ?></strong></td>
                             <td><?php echo htmlspecialchars($v->marca . ' ' . $v->modelo); ?></td>
-                            <td><?php echo $v->año; ?></td>
+                            <td><?php echo $v->anio; ?></td>
                             <td><?php echo htmlspecialchars($v->color ?? '-'); ?></td>
                             <td><a href="/clientes/perfil?id=<?php echo $v->cliente_id; ?>"><?php echo htmlspecialchars($v->cliente_nombre ?? 'Sin cliente'); ?></a></td>
                             <td>
@@ -53,7 +53,7 @@
                             </td>
                             <td>
                                 <a href="/vehiculos/perfil?id=<?php echo $v->id; ?>" class="btn btn-sm btn-info" title="Ver historial"><i class="fa-solid fa-history"></i></a>
-                                <button class="btn btn-sm btn-warning editar-vehiculo" data-id="<?php echo $v->id; ?>" data-cliente="<?php echo $v->cliente_id; ?>" data-placa="<?php echo htmlspecialchars($v->placa); ?>" data-marca="<?php echo htmlspecialchars($v->marca); ?>" data-modelo="<?php echo htmlspecialchars($v->modelo); ?>" data-año="<?php echo $v->año; ?>" data-color="<?php echo htmlspecialchars($v->color); ?>" data-vin="<?php echo htmlspecialchars($v->vin); ?>" data-motor="<?php echo htmlspecialchars($v->tipo_motor); ?>" data-obs="<?php echo htmlspecialchars($v->observaciones); ?>" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                                <button class="btn btn-sm btn-warning editar-vehiculo" data-id="<?php echo $v->id; ?>" data-cliente="<?php echo $v->cliente_id; ?>" data-placa="<?php echo htmlspecialchars($v->placa); ?>" data-marca="<?php echo htmlspecialchars($v->marca); ?>" data-modelo="<?php echo htmlspecialchars($v->modelo); ?>" data-anio="<?php echo $v->anio; ?>" data-color="<?php echo htmlspecialchars($v->color); ?>" data-vin="<?php echo htmlspecialchars($v->vin); ?>" data-motor="<?php echo htmlspecialchars($v->tipo_motor); ?>" data-obs="<?php echo htmlspecialchars($v->observaciones); ?>" title="Editar"><i class="fa-solid fa-pen"></i></button>
                                 <button class="btn btn-sm <?php echo $v->estado ? 'btn-danger' : 'btn-success'; ?> cambiar-estado-vehiculo" data-id="<?php echo $v->id; ?>" data-estado="<?php echo $v->estado ? '0' : '1'; ?>">
                                     <i class="fa-solid <?php echo $v->estado ? 'fa-ban' : 'fa-check'; ?>"></i>
                                 </button>
@@ -96,7 +96,7 @@
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Año</label>
-                            <input type="number" name="año" id="v_año" class="form-control" min="1950" max="2030">
+                            <input type="number" name="anio" id="v_anio" class="form-control" min="1950" max="2030">
                         </div>
                     </div>
                     <div class="row">
@@ -159,7 +159,7 @@ document.querySelectorAll('.editar-vehiculo').forEach(btn => {
         document.getElementById('v_placa').value = this.dataset.placa;
         document.getElementById('v_marca').value = this.dataset.marca;
         document.getElementById('v_modelo').value = this.dataset.modelo;
-        document.getElementById('v_año').value = this.dataset.año;
+        document.getElementById('v_anio').value = this.dataset.anio;
         document.getElementById('v_color').value = this.dataset.color;
         document.getElementById('v_vin').value = this.dataset.vin;
         document.getElementById('v_tipo_motor').value = this.dataset.motor;
