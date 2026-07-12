@@ -43,9 +43,11 @@ CREATE TABLE IF NOT EXISTS `pagos` (
 
 -- 3. AGREGAR VEHICULO_ID A ORDENES_SERVICIO
 ALTER TABLE `ordenes_servicio`
-  ADD COLUMN IF NOT EXISTS `vehiculo_id` int DEFAULT NULL AFTER `usuario_id`,
-  ADD KEY IF NOT EXISTS `vehiculo_id` (`vehiculo_id`),
-  ADD CONSTRAINT IF NOT EXISTS `ordenes_servicio_ibfk_3` FOREIGN KEY (`vehiculo_id`) REFERENCES `vehiculos` (`id`);
+  ADD COLUMN IF NOT EXISTS `vehiculo_id` int DEFAULT NULL AFTER `usuario_id`;
+ALTER TABLE `ordenes_servicio`
+  ADD KEY `vehiculo_id` (`vehiculo_id`);
+ALTER TABLE `ordenes_servicio`
+  ADD CONSTRAINT `ordenes_servicio_ibfk_3` FOREIGN KEY (`vehiculo_id`) REFERENCES `vehiculos` (`id`);
 
 -- 4. AGREGAR METODO_PAGO A VENTAS
 ALTER TABLE `ventas`
