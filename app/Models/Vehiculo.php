@@ -55,15 +55,15 @@ class Vehiculo extends BaseModel {
 
     public function create($data) {
         try {
-            $sql = "INSERT INTO vehiculos (cliente_id, placa, marca, modelo, año, color, vin, tipo_motor, observaciones, estado) 
-                    VALUES (:cliente_id, :placa, :marca, :modelo, :año, :color, :vin, :tipo_motor, :observaciones, 1)";
+            $sql = "INSERT INTO vehiculos (cliente_id, placa, marca, modelo, `año`, color, vin, tipo_motor, observaciones, estado) 
+                    VALUES (:cliente_id, :placa, :marca, :modelo, :anio_val, :color, :vin, :tipo_motor, :observaciones, 1)";
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
                 ':cliente_id' => $data['cliente_id'],
                 ':placa' => strtoupper($data['placa']),
                 ':marca' => $data['marca'],
                 ':modelo' => $data['modelo'],
-                ':año' => $data['año'] ?? null,
+                ':anio_val' => $data['año'] ?? null,
                 ':color' => $data['color'] ?? null,
                 ':vin' => $data['vin'] ?? null,
                 ':tipo_motor' => $data['tipo_motor'] ?? null,
@@ -75,7 +75,7 @@ class Vehiculo extends BaseModel {
     public function update($data) {
         try {
             $sql = "UPDATE vehiculos SET cliente_id=:cliente_id, placa=:placa, marca=:marca, modelo=:modelo, 
-                    año=:año, color=:color, vin=:vin, tipo_motor=:tipo_motor, observaciones=:observaciones 
+                    `año`=:anio_val, color=:color, vin=:vin, tipo_motor=:tipo_motor, observaciones=:observaciones 
                     WHERE id=:id";
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
@@ -83,7 +83,7 @@ class Vehiculo extends BaseModel {
                 ':placa' => strtoupper($data['placa']),
                 ':marca' => $data['marca'],
                 ':modelo' => $data['modelo'],
-                ':año' => $data['año'] ?? null,
+                ':anio_val' => $data['año'] ?? null,
                 ':color' => $data['color'] ?? null,
                 ':vin' => $data['vin'] ?? null,
                 ':tipo_motor' => $data['tipo_motor'] ?? null,
