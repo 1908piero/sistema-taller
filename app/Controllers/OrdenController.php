@@ -4,6 +4,7 @@ namespace App\Controllers;
 use App\Models\Orden;
 use App\Models\Cliente;
 use App\Models\Producto;
+use Config\Database;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
@@ -63,8 +64,10 @@ class OrdenController extends BaseController {
             $ordenModel = new Orden();
             if ($ordenModel->create($data)) {
                 header('Location: /ordenes?msg=guardado');
+                exit;
             } else {
                 header('Location: /ordenes?msg=error');
+                exit;
             }
         }
     }
@@ -76,8 +79,7 @@ class OrdenController extends BaseController {
             $estado = $_POST['nuevo_estado'];
             $ordenModel = new Orden();
             
-            // Intentamos actualizar
-            if ($ordenModel->updateStatus($id, $estado)) {
+            if ($ordenModel->cambiarEstado($id, $estado)) {
                 // Éxito: Redirigir
                 if(isset($_SERVER['HTTP_REFERER'])) {
                     header("Location: " . $_SERVER['HTTP_REFERER']);
@@ -106,15 +108,18 @@ class OrdenController extends BaseController {
             $cantidad = $_POST['cantidad'];
             
             $prodModel = new Producto();
-            $productos = $prodModel->getAll();
-            $precio = 0;
-            foreach($productos as $p) {
-                if($p->id == $productoId) { $precio = $p->precio_venta; break; }
-            }
+            $producto = $prodModel->getById($productoId);
+            $precio = $producto->precio_venta ?? 0;
 
             $ordenModel = new Orden();
-            $ordenModel->addRepuesto($ordenId, $productoId, $cantidad, $precio);
+            $ordenModel->addRepuesto([
+                'orden_id' => $ordenId,
+                'producto_id' => $productoId,
+                'cantidad' => $cantidad,
+                'precio_unitario' => $precio,
+            ]);
             header("Location: /ordenes/detalle?id=" . $ordenId);
+            exit;
         }
     }
 
@@ -122,11 +127,18 @@ class OrdenController extends BaseController {
     public function eliminarRepuesto() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $idDetalle = $_POST['detalle_id'];
-            $ordenModel = new Orden();
-            $ordenId = $ordenModel->removeRepuesto($idDetalle);
-            
-            if($ordenId) { header("Location: /ordenes/detalle?id=" . $ordenId); }
-            else { header("Location: /ordenes"); }
+            $db = new Database();
+            $conn = $db->getConnection();
+            $stmt = $conn->prepare("SELECT orden_id FROM orden_repuestos WHERE id = :id");
+            $stmt->execute([':id' => $idDetalle]);
+            $rep = $stmt->fetch(\PDO::FETCH_OBJ);
+            $ordenId = $rep->orden_id ?? null;
+            if ($ordenId) {
+                $ordenModel = new Orden();
+                $ordenModel->removeRepuesto($idDetalle, $ordenId);
+            }
+            header("Location: /ordenes/detalle?id=" . ($ordenId ?: ''));
+            exit;
         }
     }
 
@@ -136,8 +148,9 @@ class OrdenController extends BaseController {
             $ordenId = $_POST['orden_id'];
             $costo = $_POST['costo_mano_obra'];
             $ordenModel = new Orden();
-            $ordenModel->updateManoObra($ordenId, $costo);
+            $ordenModel->actualizarManoObra($ordenId, $costo);
             header("Location: /ordenes/detalle?id=" . $ordenId);
+            exit;
         }
     }
 
@@ -148,11 +161,10 @@ class OrdenController extends BaseController {
             $texto = $_POST['diagnostico'];
             
             $ordenModel = new Orden();
-            $ordenModel->updateDiagnostico($ordenId, $texto);
-            // Registramos el evento en el log
-            $ordenModel->logEvento($ordenId, 'Diagnóstico Actualizado', 'Se editaron las notas técnicas.');
+            $ordenModel->guardarDiagnostico($ordenId, $texto);
             
             header("Location: /ordenes/detalle?id=" . $ordenId);
+            exit;
         }
     }
 
