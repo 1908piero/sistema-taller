@@ -41,9 +41,13 @@
             }
         });
 
-        // Arreglo para que Select2 funcione dentro de Modals de Bootstrap
-        // (Por defecto, el buscador del select2 se rompe en los modales)
-        $.fn.modal.Constructor.prototype._enforceFocus = function() {};
+    });
+    
+    // Arreglo para que Select2 funcione dentro de Modals de Bootstrap 5
+    document.addEventListener('shown.bs.modal', function (e) {
+        $(e.target).find('.select2').each(function () {
+            $(this).select2({ dropdownParent: $(e.target), theme: 'bootstrap-5', width: '100%' });
+        });
     });
 </script>
 
