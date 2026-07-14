@@ -140,7 +140,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Generar Ticket</button>
+                    <button type="submit" class="btn btn-primary">Guardar Datos</button>
                 </div>
             </form>
         </div>
