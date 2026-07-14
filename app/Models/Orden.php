@@ -68,7 +68,7 @@ class Orden extends BaseModel {
                 ':vehiculo_id' => $data['vehiculo_id'] ?? null,
                 ':tipo_servicio' => $data['tipo_servicio'] ?? 'taller',
                 ':direccion_servicio' => $data['direccion_servicio'] ?? null,
-                ':fecha_promesa' => $data['fecha_promesa'] ?? null,
+                ':fecha_promesa' => !empty($data['fecha_promesa']) ? $data['fecha_promesa'] : null,
                 ':equipo_tipo' => $data['equipo_tipo'] ?? 'vehiculo',
                 ':equipo_marca' => $data['equipo_marca'] ?? '',
                 ':equipo_modelo' => $data['equipo_modelo'] ?? '',

@@ -14,6 +14,7 @@
         <?php 
             if($_GET['msg'] == 'guardado') echo "Orden generada exitosamente.";
             elseif($_GET['msg'] == 'estado_actualizado') echo "Estado actualizado.";
+            elseif($_GET['msg'] == 'error') echo "<i class='fa-solid fa-triangle-exclamation'></i> Error al guardar. Verifica que todos los campos requeridos estén llenos.";
             else echo "Acción realizada.";
         ?>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
