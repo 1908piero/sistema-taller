@@ -56,7 +56,7 @@ class Configuracion extends BaseModel {
             return $stmt->execute($params);
 
         } catch (\Exception $e) {
-            error_log("[CONFIG MODEL] update error: " . $e->getMessage());
+            fwrite(STDERR, "[CONFIG MODEL] update error: " . $e->getMessage() . "\n");
             return false;
         }
     }

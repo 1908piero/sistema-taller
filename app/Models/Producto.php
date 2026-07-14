@@ -60,7 +60,7 @@ class Producto extends BaseModel {
                 ':img' => $data['imagen']
             ]);
         } catch (\Exception $e) {
-            error_log("[PRODUCTO MODEL] create error: " . $e->getMessage());
+            fwrite(STDERR, "[PRODUCTO MODEL] create error: " . $e->getMessage() . "\n");
             return false;
         }
     }
@@ -89,7 +89,7 @@ class Producto extends BaseModel {
 
             return $stmt->execute($params);
         } catch (\Exception $e) {
-            error_log("[PRODUCTO MODEL] update error: " . $e->getMessage());
+            fwrite(STDERR, "[PRODUCTO MODEL] update error: " . $e->getMessage() . "\n");
             return false;
         }
     }

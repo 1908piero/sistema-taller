@@ -83,7 +83,7 @@ class Orden extends BaseModel {
             }
             return false;
         } catch (\Exception $e) { 
-            error_log("[ORDEN ERROR] " . $e->getMessage());
+            fwrite(STDERR, "[ORDEN MODEL] " . $e->getMessage() . "\n");
             return false; 
         }
     }
