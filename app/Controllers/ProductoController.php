@@ -67,16 +67,7 @@ class ProductoController extends BaseController {
 
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $imagen = null;
-            if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === 0) {
-                $dir = __DIR__ . '/../../public/uploads/productos/';
-                if (!file_exists($dir)) mkdir($dir, 0777, true);
-                $ext = pathinfo($_FILES['imagen']['name'], PATHINFO_EXTENSION);
-                $nombreImg = 'prod_' . time() . '.' . $ext;
-                if (move_uploaded_file($_FILES['imagen']['tmp_name'], $dir . $nombreImg)) {
-                    $imagen = $nombreImg;
-                }
-            }
+            $imagen = $this->procesarImagenSubida('imagen', '/../../public/uploads/productos/', 'prod');
 
             $data = [
                 'codigo' => $_POST['codigo'],
@@ -99,15 +90,7 @@ class ProductoController extends BaseController {
 
     public function update() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $imagen = null;
-            if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === 0) {
-                $dir = __DIR__ . '/../../public/uploads/productos/';
-                $ext = pathinfo($_FILES['imagen']['name'], PATHINFO_EXTENSION);
-                $nombreImg = 'prod_' . time() . '.' . $ext;
-                if (move_uploaded_file($_FILES['imagen']['tmp_name'], $dir . $nombreImg)) {
-                    $imagen = $nombreImg;
-                }
-            }
+            $imagen = $this->procesarImagenSubida('imagen', '/../../public/uploads/productos/', 'prod');
 
             $data = [
                 'id' => $_POST['id'],

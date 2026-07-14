@@ -18,24 +18,9 @@ class ConfiguracionController extends BaseController {
 
     public function update() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            
-            // Procesar Logo
-            $logo = null;
-            if (isset($_FILES['logo']) && $_FILES['logo']['error'] === 0) {
-                $carpetaDestino = __DIR__ . '/../../public/uploads/logo/';
-                if (!file_exists($carpetaDestino)) {
-                    mkdir($carpetaDestino, 0777, true);
-                }
-                
-                $ext = pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION);
-                $nombreArchivo = 'logo_' . time() . '.' . $ext;
 
-                if (move_uploaded_file($_FILES['logo']['tmp_name'], $carpetaDestino . $nombreArchivo)) {
-                    $logo = $nombreArchivo;
-                }
-            }
+            $logo = $this->procesarImagenSubida('logo', '/../../public/uploads/logo/', 'logo');
 
-            // Preparar datos
             $data = [
                 'nombre_sistema' => $_POST['nombre_sistema'],
                 'moneda' => $_POST['moneda'],
@@ -46,8 +31,10 @@ class ConfiguracionController extends BaseController {
                 'direccion' => $_POST['direccion'],
                 'terminos_orden' => $_POST['terminos_orden'],
                 'mensaje_ticket' => $_POST['mensaje_ticket'],
-                'logo' => $logo
             ];
+            if ($logo !== null) {
+                $data['logo'] = $logo;
+            }
 
             $configModel = new Configuracion();
             if ($configModel->update($data)) {

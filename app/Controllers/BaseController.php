@@ -36,6 +36,32 @@ class BaseController {
         $this->config = $configModel->obtenerConfiguracion();
     }
 
+    protected function procesarImagenSubida($campo, $directorio, $prefijo) {
+        if (!isset($_FILES[$campo]) || $_FILES[$campo]['error'] !== UPLOAD_ERR_OK) {
+            return null;
+        }
+        $tmpName = $_FILES[$campo]['tmp_name'];
+        $ext = strtolower(pathinfo($_FILES[$campo]['name'], PATHINFO_EXTENSION));
+        $permitidas = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        if (!in_array($ext, $permitidas)) {
+            return null;
+        }
+        $dir = __DIR__ . $directorio;
+        if (!file_exists($dir)) {
+            mkdir($dir, 0777, true);
+        }
+        $nombreArchivo = $prefijo . '_' . time() . '.' . $ext;
+        if (move_uploaded_file($tmpName, $dir . $nombreArchivo)) {
+            return $nombreArchivo;
+        }
+        $imgData = @file_get_contents($tmpName);
+        if ($imgData !== false) {
+            $mime = mime_content_type($tmpName);
+            return 'data:' . $mime . ';base64,' . base64_encode($imgData);
+        }
+        return null;
+    }
+
     protected function view($viewPath, $data = []) {
         extract($data);
         $sistema = $this->config;

@@ -2,11 +2,15 @@
 // --- LÓGICA LOGO BASE64 ---
 $logoBase64 = null;
 if (!empty($sistema->logo)) {
-    $path = $_SERVER['DOCUMENT_ROOT'] . '/uploads/logo/' . $sistema->logo;
-    if (file_exists($path)) {
-        $type = pathinfo($path, PATHINFO_EXTENSION);
-        $data = file_get_contents($path);
-        $logoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+    if (strpos($sistema->logo, 'data:') === 0) {
+        $logoBase64 = $sistema->logo;
+    } else {
+        $path = $_SERVER['DOCUMENT_ROOT'] . '/uploads/logo/' . $sistema->logo;
+        if (file_exists($path)) {
+            $type = pathinfo($path, PATHINFO_EXTENSION);
+            $data = file_get_contents($path);
+            $logoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+        }
     }
 }
 ?>

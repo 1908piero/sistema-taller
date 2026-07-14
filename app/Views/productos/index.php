@@ -43,7 +43,11 @@
                             <tr class="<?php echo ($prod->estado == 0) ? 'table-secondary opacity-75' : ''; ?>">
                                 <td>
                                     <?php if($prod->imagen): ?>
-                                        <img src="/uploads/productos/<?php echo $prod->imagen; ?>" class="rounded" width="40" height="40" style="object-fit: cover;">
+                                        <?php if(strpos($prod->imagen, 'data:') === 0): ?>
+                                            <img src="<?php echo $prod->imagen; ?>" class="rounded" width="40" height="40" style="object-fit: cover;">
+                                        <?php else: ?>
+                                            <img src="/uploads/productos/<?php echo $prod->imagen; ?>" class="rounded" width="40" height="40" style="object-fit: cover;">
+                                        <?php endif; ?>
                                     <?php else: ?>
                                         <div class="bg-secondary rounded text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="fa-solid fa-image"></i></div>
                                     <?php endif; ?>
@@ -232,8 +236,10 @@
         document.getElementById('precio_compra').value = prod.precio_compra;
         document.getElementById('precio_venta').value = prod.precio_venta;
         
-        if(prod.imagen) document.getElementById('previewImg').src = '/uploads/productos/' + prod.imagen;
-        else document.getElementById('previewImg').src = 'https://via.placeholder.com/150?text=Sin+Imagen';
+        if(prod.imagen) {
+            if(prod.imagen.startsWith('data:')) document.getElementById('previewImg').src = prod.imagen;
+            else document.getElementById('previewImg').src = '/uploads/productos/' + prod.imagen;
+        } else document.getElementById('previewImg').src = 'https://via.placeholder.com/150?text=Sin+Imagen';
 
         document.getElementById('tituloModal').innerText = 'Editar Producto';
         document.getElementById('formProducto').action = '/productos/actualizar';

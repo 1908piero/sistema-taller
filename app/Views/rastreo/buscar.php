@@ -28,7 +28,11 @@
     <div class="container justify-content-center">
         <a class="navbar-brand d-flex align-items-center" href="/rastreo">
             <?php if(!empty($sistema->logo)): ?>
-                <img src="/uploads/logo/<?php echo $sistema->logo; ?>" height="40" class="me-2">
+                <?php if(strpos($sistema->logo, 'data:') === 0): ?>
+                    <img src="<?php echo $sistema->logo; ?>" height="40" class="me-2">
+                <?php else: ?>
+                    <img src="/uploads/logo/<?php echo $sistema->logo; ?>" height="40" class="me-2">
+                <?php endif; ?>
             <?php else: ?>
                 <i class="fa-solid fa-screwdriver-wrench fa-lg text-primary me-2"></i>
             <?php endif; ?>
