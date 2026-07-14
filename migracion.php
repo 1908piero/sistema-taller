@@ -33,4 +33,18 @@ try {
     }
 }
 
+echo "\n[MIGRACION] Verificando columnas faltantes...\n";
+
+$check = $db->query("SHOW COLUMNS FROM ordenes_servicio LIKE 'vehiculo_id'");
+if ($check->rowCount() == 0) {
+    try {
+        $db->exec("ALTER TABLE ordenes_servicio ADD COLUMN `vehiculo_id` int DEFAULT NULL");
+        echo "[MIGRACION] OK: ordenes_servicio.vehiculo_id agregado\n";
+    } catch (PDOException $e) {
+        echo "[MIGRACION] AVISO: ordenes_servicio.vehiculo_id - " . $e->getMessage() . "\n";
+    }
+} else {
+    echo "[MIGRACION] OK: ordenes_servicio.vehiculo_id ya existe\n";
+}
+
 echo "[MIGRACION] Completa.\n";
