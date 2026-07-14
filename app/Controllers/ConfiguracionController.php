@@ -40,6 +40,7 @@ class ConfiguracionController extends BaseController {
             if ($configModel->update($data)) {
                 header('Location: /configuracion?msg=actualizado');
             } else {
+                error_log("[CONFIG ERROR] update failed. logo=" . (isset($logo) ? (strpos($logo, 'data:') === 0 ? 'base64' : $logo) : 'none'));
                 header('Location: /configuracion?msg=error');
             }
         }

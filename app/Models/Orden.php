@@ -82,7 +82,10 @@ class Orden extends BaseModel {
                 return $ordenId;
             }
             return false;
-        } catch (\Exception $e) { return false; }
+        } catch (\Exception $e) { 
+            error_log("[ORDEN ERROR] " . $e->getMessage());
+            return false; 
+        }
     }
 
     public function cambiarEstado($id, $nuevoEstado) {

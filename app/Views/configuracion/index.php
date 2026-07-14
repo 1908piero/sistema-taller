@@ -95,8 +95,10 @@
                         <?php if(!empty($datos->logo)): ?>
                             <?php if(strpos($datos->logo, 'data:') === 0): ?>
                                 <img id="previewLogo" src="<?php echo $datos->logo; ?>" class="img-fluid" style="max-height: 180px;">
-                            <?php else: ?>
+                            <?php elseif(file_exists($_SERVER['DOCUMENT_ROOT'] . '/public/uploads/logo/' . $datos->logo)): ?>
                                 <img id="previewLogo" src="/uploads/logo/<?php echo $datos->logo; ?>" class="img-fluid" style="max-height: 180px;">
+                            <?php else: ?>
+                                <img id="previewLogo" src="https://via.placeholder.com/200x100?text=Sin+Logo" class="img-fluid">
                             <?php endif; ?>
                         <?php else: ?>
                             <img id="previewLogo" src="https://via.placeholder.com/200x100?text=Sin+Logo" class="img-fluid">

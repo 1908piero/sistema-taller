@@ -45,8 +45,10 @@
                                     <?php if($prod->imagen): ?>
                                         <?php if(strpos($prod->imagen, 'data:') === 0): ?>
                                             <img src="<?php echo $prod->imagen; ?>" class="rounded" width="40" height="40" style="object-fit: cover;">
-                                        <?php else: ?>
+                                        <?php elseif(file_exists($_SERVER['DOCUMENT_ROOT'] . '/public/uploads/productos/' . $prod->imagen)): ?>
                                             <img src="/uploads/productos/<?php echo $prod->imagen; ?>" class="rounded" width="40" height="40" style="object-fit: cover;">
+                                        <?php else: ?>
+                                            <div class="bg-secondary rounded text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="fa-solid fa-image"></i></div>
                                         <?php endif; ?>
                                     <?php else: ?>
                                         <div class="bg-secondary rounded text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="fa-solid fa-image"></i></div>

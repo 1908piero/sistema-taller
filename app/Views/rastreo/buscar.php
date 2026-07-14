@@ -30,8 +30,10 @@
             <?php if(!empty($sistema->logo)): ?>
                 <?php if(strpos($sistema->logo, 'data:') === 0): ?>
                     <img src="<?php echo $sistema->logo; ?>" height="40" class="me-2">
-                <?php else: ?>
+                <?php elseif(file_exists($_SERVER['DOCUMENT_ROOT'] . '/public/uploads/logo/' . $sistema->logo)): ?>
                     <img src="/uploads/logo/<?php echo $sistema->logo; ?>" height="40" class="me-2">
+                <?php else: ?>
+                    <i class="fa-solid fa-screwdriver-wrench fa-lg text-primary me-2"></i>
                 <?php endif; ?>
             <?php else: ?>
                 <i class="fa-solid fa-screwdriver-wrench fa-lg text-primary me-2"></i>

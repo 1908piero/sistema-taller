@@ -66,6 +66,7 @@ class OrdenController extends BaseController {
                 header('Location: /ordenes?msg=guardado');
                 exit;
             } else {
+                error_log("[ORDEN ERROR] create failed. cliente_id={$data['cliente_id']} equipo={$data['equipo_tipo']} user_id=" . ($_SESSION['user_id'] ?? 'N/A'));
                 header('Location: /ordenes?msg=error');
                 exit;
             }

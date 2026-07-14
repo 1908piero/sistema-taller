@@ -83,6 +83,7 @@ class ProductoController extends BaseController {
             if ($prodModel->create($data)) {
                 header('Location: /productos?msg=guardado');
             } else {
+                error_log("[PRODUCTO ERROR] create failed. codigo={$data['codigo']} nombre={$data['nombre']} imagen=" . (is_string($data['imagen']) ? substr($data['imagen'], 0, 50) : 'null'));
                 header('Location: /productos?msg=error');
             }
         }
@@ -106,6 +107,7 @@ class ProductoController extends BaseController {
             if ($prodModel->update($data)) {
                 header('Location: /productos?msg=actualizado');
             } else {
+                error_log("[PRODUCTO ERROR] update failed. id={$data['id']} codigo={$data['codigo']}");
                 header('Location: /productos?msg=error');
             }
         }
