@@ -5,17 +5,15 @@ use App\Models\Usuario;
 
 class UsuarioController extends BaseController {
 
-    // Método para verificar que sea Admin
     private function verificarPermiso() {
         if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            // Si no es admin, lo mandamos al dashboard con error
             header('Location: /?msg=no_autorizado');
             exit;
         }
     }
 
     public function index() {
-        $this->verificarPermiso(); // Seguridad primero
+        $this->verificarPermiso();
 
         $userModel = new Usuario();
         $usuarios = $userModel->getAll();
@@ -38,8 +36,9 @@ class UsuarioController extends BaseController {
             ];
 
             $userModel = new Usuario();
-            // Validar que el email no exista sería ideal, pero por brevedad vamos directo
             if ($userModel->create($data)) {
+                $id = $this->db->lastInsertId();
+                $this->registrarAuditoria('usuarios', $id, 'crear', null, ['nombre' => $data['nombre'], 'email' => $data['email'], 'rol' => $data['rol']]);
                 header('Location: /usuarios?msg=guardado');
             } else {
                 header('Location: /usuarios?msg=error');
@@ -51,16 +50,20 @@ class UsuarioController extends BaseController {
         $this->verificarPermiso();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['id'];
+            $userModel = new Usuario();
+            $anterior = $userModel->getById($id);
+
             $data = [
-                'id' => $_POST['id'],
+                'id' => $id,
                 'nombre' => $_POST['nombre'],
                 'email' => $_POST['email'],
-                'password' => $_POST['password'], // Si está vacío, el modelo lo ignora
+                'password' => $_POST['password'],
                 'rol' => $_POST['rol']
             ];
 
-            $userModel = new Usuario();
             if ($userModel->update($data)) {
+                $this->registrarAuditoria('usuarios', $id, 'actualizar', $anterior, ['nombre' => $data['nombre'], 'email' => $data['email'], 'rol' => $data['rol']]);
                 header('Location: /usuarios?msg=actualizado');
             } else {
                 header('Location: /usuarios?msg=error');
@@ -75,7 +78,6 @@ class UsuarioController extends BaseController {
             $id = $_POST['id'];
             $estado = $_POST['nuevo_estado'];
             
-            // Evitar desactivarse a uno mismo
             if ($id == $_SESSION['user_id']) {
                 header('Location: /usuarios?msg=error_propio');
                 exit;
@@ -83,6 +85,7 @@ class UsuarioController extends BaseController {
 
             $userModel = new Usuario();
             if ($userModel->updateStatus($id, $estado)) {
+                $this->registrarAuditoria('usuarios', $id, 'cambiar_estado', null, ['estado' => $estado]);
                 header('Location: /usuarios?msg=estado_cambiado');
             } else {
                 header('Location: /usuarios?msg=error');

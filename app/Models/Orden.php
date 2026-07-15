@@ -198,24 +198,53 @@ class Orden extends BaseModel {
 
     public function guardarDiagnostico($ordenId, $diagnostico) {
         try {
-            $stmt = $this->db->prepare("UPDATE ordenes_servicio SET observaciones_tecnicas = :diag WHERE id = :id");
+            // Actualizar ambas columnas (observaciones_tecnicas legado + diagnostico nuevo)
+            $stmt = $this->db->prepare("UPDATE ordenes_servicio SET observaciones_tecnicas = :diag, diagnostico = :diag WHERE id = :id");
             $stmt->execute([':diag' => $diagnostico, ':id' => $ordenId]);
             $this->registrarHistorial($ordenId, 'Diagnóstico guardado', substr($diagnostico, 0, 100));
             return true;
-        } catch (\Exception $e) { return false; }
+        } catch (\Exception $e) { 
+            // Fallback: al menos actualizar observaciones_tecnicas
+            try {
+                $stmt = $this->db->prepare("UPDATE ordenes_servicio SET observaciones_tecnicas = :diag WHERE id = :id");
+                $stmt->execute([':diag' => $diagnostico, ':id' => $ordenId]);
+                $this->registrarHistorial($ordenId, 'Diagnóstico guardado', substr($diagnostico, 0, 100));
+                return true;
+            } catch (\Exception $e2) { return false; }
+        }
     }
 
-    private function recalcularTotal($ordenId) {
+    // RF-05: Obtener servicios de la orden
+    public function getServicios($ordenId) {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT os.*, s.nombre as servicio_nombre, s.categoria as servicio_categoria
+                FROM orden_servicios os
+                LEFT JOIN servicios s ON os.servicio_id = s.id
+                WHERE os.orden_id = :id
+                ORDER BY os.id ASC
+            ");
+            $stmt->execute([':id' => $ordenId]);
+            return $stmt->fetchAll(\PDO::FETCH_OBJ);
+        } catch (\Exception $e) { return []; }
+    }
+
+    // RF-05: Recalcular total incluyendo servicios
+    public function recalcularTotal($ordenId) {
         try {
             $stmt = $this->db->prepare("SELECT COALESCE(SUM(subtotal), 0) as total_repuestos FROM orden_repuestos WHERE orden_id = :id");
             $stmt->execute([':id' => $ordenId]);
             $totalRepuestos = $stmt->fetch(PDO::FETCH_OBJ)->total_repuestos;
 
+            $stmtS = $this->db->prepare("SELECT COALESCE(SUM(subtotal), 0) as total_servicios FROM orden_servicios WHERE orden_id = :id");
+            $stmtS->execute([':id' => $ordenId]);
+            $totalServicios = $stmtS->fetch(PDO::FETCH_OBJ)->total_servicios;
+
             $stmt2 = $this->db->prepare("SELECT costo_mano_obra FROM ordenes_servicio WHERE id = :id");
             $stmt2->execute([':id' => $ordenId]);
             $manoObra = $stmt2->fetch(PDO::FETCH_OBJ)->costo_mano_obra ?? 0;
 
-            $total = $totalRepuestos + $manoObra;
+            $total = $totalRepuestos + $totalServicios + $manoObra;
             $stmt3 = $this->db->prepare("UPDATE ordenes_servicio SET total = :total WHERE id = :id");
             $stmt3->execute([':total' => $total, ':id' => $ordenId]);
         } catch (\Exception $e) {}

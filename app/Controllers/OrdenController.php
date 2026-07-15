@@ -10,7 +10,6 @@ use Dompdf\Options;
 
 class OrdenController extends BaseController {
 
-    // Listar Órdenes
     public function index() {
         $ordenModel = new Orden();
         $ordenes = $ordenModel->getAll();
@@ -24,7 +23,6 @@ class OrdenController extends BaseController {
         ]);
     }
 
-    // Ver Detalle / Bitácora
     public function detalle() {
         $id = $_GET['id'] ?? null;
         if (!$id) { header('Location: /ordenes'); exit; }
@@ -35,20 +33,29 @@ class OrdenController extends BaseController {
         if (!$orden) { echo "Orden no encontrada"; exit; }
 
         $repuestos = $ordenModel->getRepuestos($id);
+        $servicios = $ordenModel->getServicios($id);
         $historial = $ordenModel->getHistorial($id);
         $prodModel = new Producto();
         $productos = $prodModel->getAll();
 
+        // Cargar servicios del catálogo (RF-05)
+        $serviciosCatalogo = [];
+        try {
+            $stmt = $this->db->query("SELECT * FROM servicios WHERE estado = 1 ORDER BY nombre");
+            $serviciosCatalogo = $stmt->fetchAll(\PDO::FETCH_OBJ);
+        } catch (\Exception $e) {}
+
         $this->view('ordenes/detalle', [
             'orden' => $orden,
             'repuestos' => $repuestos,
+            'servicios' => $servicios,
+            'serviciosCatalogo' => $serviciosCatalogo,
             'productos' => $productos,
             'historial' => $historial,
             'titulo' => 'Detalle Orden #' . $id
         ]);
     }
 
-    // Crear Nueva Orden
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $data = [
@@ -62,7 +69,9 @@ class OrdenController extends BaseController {
             ];
 
             $ordenModel = new Orden();
-            if ($ordenModel->create($data)) {
+            $ordenId = $ordenModel->create($data);
+            if ($ordenId) {
+                $this->registrarAuditoria('ordenes_servicio', $ordenId, 'crear', null, $data);
                 header('Location: /ordenes?msg=guardado');
                 exit;
             } else {
@@ -73,23 +82,48 @@ class OrdenController extends BaseController {
         }
     }
 
-    // --- CORREGIDO: Cambiar Estado (Sin pantalla blanca) ---
+    // RF-04 + RN-05: Diagnóstico requerido antes de cambiar a 'reparado' o 'entregado'
     public function cambiarEstado() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = $_POST['id'];
             $estado = $_POST['nuevo_estado'];
             $ordenModel = new Orden();
-            
+            $orden = $ordenModel->getById($id);
+
+            if (!$orden) {
+                echo "<div style='padding:20px; font-family:sans-serif; text-align:center;'><h2 style='color:red;'>Orden no encontrada</h2></div>";
+                exit;
+            }
+
+            // RN-05: Validar que el diagnóstico exista antes de pasar a reparado/entregado
+            if (in_array($estado, ['reparado', 'entregado']) && empty(trim($orden->observaciones_tecnicas ?? '')) && empty(trim($orden->diagnostico ?? ''))) {
+                echo "<div style='padding:20px; font-family:sans-serif; text-align:center;'>";
+                echo "<h2 style='color:red;'>MSJ-28: Diagnóstico requerido (RN-05)</h2>";
+                echo "<p><strong>RN-05:</strong> Debe registrar el diagnóstico técnico antes de cambiar el estado a 'Reparado' o 'Entregado'.</p>";
+                echo "<p>Agregue el diagnóstico en la sección 'Informe Técnico' del detalle de la orden.</p>";
+                echo "<br><a href='/ordenes/detalle?id=$id' class='btn btn-primary'>Ir al detalle</a>";
+                echo "</div>";
+                exit;
+            }
+
+            // RN-05: Si se entrega, registrar fecha_entrega
+            $datosNuevos = ['estado' => $estado];
+            if ($estado === 'entregado') {
+                try {
+                    $this->db->prepare("UPDATE ordenes_servicio SET fecha_entrega = NOW() WHERE id = :id")->execute([':id' => $id]);
+                    $datosNuevos['fecha_entrega'] = date('Y-m-d H:i:s');
+                } catch (\Exception $e) {}
+            }
+
             if ($ordenModel->cambiarEstado($id, $estado)) {
-                // Éxito: Redirigir
+                $this->registrarAuditoria('ordenes_servicio', $id, 'cambiar_estado', "Estado anterior: {$orden->estado}", $datosNuevos);
                 if(isset($_SERVER['HTTP_REFERER'])) {
                     header("Location: " . $_SERVER['HTTP_REFERER']);
                 } else {
                     header('Location: /ordenes');
                 }
-                exit; // Detener script para asegurar redirección
+                exit;
             } else {
-                // Error: Mostrar mensaje en lugar de pantalla blanca
                 echo "<div style='padding:20px; font-family:sans-serif; text-align:center;'>";
                 echo "<h2 style='color:red;'>Error al actualizar el estado</h2>";
                 echo "<p>No se pudo guardar el cambio. Posibles causas:</p>";
@@ -101,7 +135,6 @@ class OrdenController extends BaseController {
         }
     }
 
-    // Agregar Repuesto al presupuesto
     public function agregarRepuesto() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $ordenId = $_POST['orden_id'];
@@ -119,12 +152,12 @@ class OrdenController extends BaseController {
                 'cantidad' => $cantidad,
                 'precio_unitario' => $precio,
             ]);
+            $this->registrarAuditoria('orden_repuestos', null, 'agregar_repuesto', null, "Orden #$ordenId - Producto #$productoId x$cantidad");
             header("Location: /ordenes/detalle?id=" . $ordenId);
             exit;
         }
     }
 
-    // Eliminar Repuesto
     public function eliminarRepuesto() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $idDetalle = $_POST['detalle_id'];
@@ -137,39 +170,93 @@ class OrdenController extends BaseController {
             if ($ordenId) {
                 $ordenModel = new Orden();
                 $ordenModel->removeRepuesto($idDetalle, $ordenId);
+                $this->registrarAuditoria('orden_repuestos', $idDetalle, 'eliminar_repuesto', null, "Orden #$ordenId");
             }
             header("Location: /ordenes/detalle?id=" . ($ordenId ?: ''));
             exit;
         }
     }
 
-    // Actualizar costo de Mano de Obra
     public function actualizarManoObra() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $ordenId = $_POST['orden_id'];
             $costo = $_POST['costo_mano_obra'];
             $ordenModel = new Orden();
             $ordenModel->actualizarManoObra($ordenId, $costo);
+            $this->registrarAuditoria('ordenes_servicio', $ordenId, 'actualizar_mano_obra', null, "Mano de obra: S/ $costo");
             header("Location: /ordenes/detalle?id=" . $ordenId);
             exit;
         }
     }
 
-    // Guardar Diagnóstico Técnico
     public function guardarDiagnostico() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $ordenId = $_POST['orden_id'];
             $texto = $_POST['diagnostico'];
             
             $ordenModel = new Orden();
-            $ordenModel->guardarDiagnostico($ordenId, $texto);
-            
+            if ($ordenModel->guardarDiagnostico($ordenId, $texto)) {
+                $this->registrarAuditoria('ordenes_servicio', $ordenId, 'guardar_diagnostico', null, substr($texto, 0, 200));
+                header("Location: /ordenes/detalle?id=" . $ordenId . "&msg=diagnostico_ok");
+            } else {
+                header("Location: /ordenes/detalle?id=" . $ordenId . "&msg=diagnostico_error");
+            }
+            exit;
+        }
+    }
+
+    // RF-05: Agregar servicio del catálogo a la orden
+    public function agregarServicio() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $ordenId = $_POST['orden_id'];
+            $servicioId = $_POST['servicio_id'];
+            $cantidad = $_POST['cantidad'] ?? 1;
+            $tecnico = $_POST['tecnico_asignado'] ?? null;
+
+            try {
+                $stmt = $this->db->prepare("SELECT * FROM servicios WHERE id = :id AND estado = 1");
+                $stmt->execute([':id' => $servicioId]);
+                $servicio = $stmt->fetch(\PDO::FETCH_OBJ);
+
+                if ($servicio) {
+                    $subtotal = $servicio->precio * $cantidad;
+                    $stmt2 = $this->db->prepare("INSERT INTO orden_servicios (orden_id, servicio_id, cantidad, precio_unitario, subtotal, tecnico_asignado) 
+                                                  VALUES (:oid, :sid, :cant, :precio, :subtotal, :tecnico)");
+                    $stmt2->execute([
+                        ':oid' => $ordenId, ':sid' => $servicioId,
+                        ':cant' => $cantidad, ':precio' => $servicio->precio,
+                        ':subtotal' => $subtotal, ':tecnico' => $tecnico
+                    ]);
+                    $ordenModel = new Orden();
+                    $ordenModel->recalcularTotal($ordenId);
+                    $this->registrarAuditoria('orden_servicios', null, 'agregar_servicio', null, "Orden #$ordenId - Servicio #$servicioId x$cantidad");
+                }
+            } catch (\Exception $e) {}
+
             header("Location: /ordenes/detalle?id=" . $ordenId);
             exit;
         }
     }
 
-    // --- Imprimir Orden A4 (Con QR) ---
+    // RF-05: Eliminar servicio de la orden
+    public function eliminarServicio() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $idDetalle = $_POST['detalle_id'];
+            $ordenId = $_POST['orden_id'];
+
+            try {
+                $stmt = $this->db->prepare("DELETE FROM orden_servicios WHERE id = :id");
+                $stmt->execute([':id' => $idDetalle]);
+                $ordenModel = new Orden();
+                $ordenModel->recalcularTotal($ordenId);
+                $this->registrarAuditoria('orden_servicios', $idDetalle, 'eliminar_servicio', null, "Orden #$ordenId");
+            } catch (\Exception $e) {}
+
+            header("Location: /ordenes/detalle?id=" . $ordenId);
+            exit;
+        }
+    }
+
     public function imprimir() {
         $id = $_GET['id'] ?? null;
         if (!$id) { die("ID requerido"); }
@@ -177,6 +264,7 @@ class OrdenController extends BaseController {
         $ordenModel = new Orden();
         $orden = $ordenModel->getById($id);
         $repuestos = $ordenModel->getRepuestos($id);
+        $servicios = $ordenModel->getServicios($id);
         $sistema = $this->config;
 
         ob_start();
@@ -194,7 +282,6 @@ class OrdenController extends BaseController {
         $dompdf->stream("Orden_Servicio_$id.pdf", ["Attachment" => false]);
     }
 
-    // --- Imprimir Etiqueta Sticker (Con QR) ---
     public function etiqueta() {
         $id = $_GET['id'] ?? null;
         if (!$id) { die("ID requerido"); }
@@ -210,16 +297,14 @@ class OrdenController extends BaseController {
         $options = new Options();
         $options->set('isRemoteEnabled', true);
         $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html);
         
-        // Tamaño personalizado (aprox 8cm x 5cm)
+        $dompdf->loadHtml($html);
         $dompdf->setPaper([0, 0, 226.77, 141.73], 'landscape'); 
         $dompdf->render();
 
         $dompdf->stream("Etiqueta_$id.pdf", ["Attachment" => false]);
     }
 
-    // --- Generar Certificado de Garantía ---
     public function garantia() {
         $id = $_GET['id'] ?? null;
         if (!$id) { die("ID requerido"); }
@@ -227,6 +312,7 @@ class OrdenController extends BaseController {
         $ordenModel = new Orden();
         $orden = $ordenModel->getById($id);
         $repuestos = $ordenModel->getRepuestos($id);
+        $servicios = $ordenModel->getServicios($id);
         $sistema = $this->config;
 
         ob_start();
@@ -236,9 +322,8 @@ class OrdenController extends BaseController {
         $options = new Options();
         $options->set('isRemoteEnabled', true);
         $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html);
         
-        // Formato Horizontal (Diploma)
+        $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'landscape'); 
         $dompdf->render();
 

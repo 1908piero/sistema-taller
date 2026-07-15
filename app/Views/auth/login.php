@@ -38,9 +38,15 @@
     </div>
 
     <?php if(isset($_GET['error'])): ?>
-        <div class="alert alert-danger text-center py-2">
-            <small><i class="fa-solid fa-triangle-exclamation"></i> Usuario o contraseña incorrectos</small>
-        </div>
+        <?php if($_GET['error'] === 'bloqueado'): ?>
+            <div class="alert alert-danger text-center py-2">
+                <small><i class="fa-solid fa-lock"></i> <strong>MSJ-31:</strong> Cuenta temporalmente bloqueada. Demasiados intentos fallidos. Espere 15 minutos.</small>
+            </div>
+        <?php else: ?>
+            <div class="alert alert-danger text-center py-2">
+                <small><i class="fa-solid fa-triangle-exclamation"></i> <strong>MSJ-30:</strong> Usuario o contraseña incorrectos</small>
+            </div>
+        <?php endif; ?>
     <?php endif; ?>
 
     <form action="/login/auth" method="POST">

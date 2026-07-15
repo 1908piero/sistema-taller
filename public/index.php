@@ -28,6 +28,7 @@ use App\Controllers\ConfiguracionController;
 use App\Controllers\RastreoController;
 use App\Controllers\VehiculoController;
 use App\Controllers\PagoController;
+use App\Controllers\ServicioController;
 
 $router = new Router();
 
@@ -73,6 +74,8 @@ $router->post('/ordenes/agregar-repuesto', [OrdenController::class, 'agregarRepu
 $router->post('/ordenes/eliminar-repuesto', [OrdenController::class, 'eliminarRepuesto']);
 $router->post('/ordenes/mano-obra', [OrdenController::class, 'actualizarManoObra']);
 $router->post('/ordenes/diagnostico', [OrdenController::class, 'guardarDiagnostico']);
+$router->post('/ordenes/agregar-servicio', [OrdenController::class, 'agregarServicio']);
+$router->post('/ordenes/eliminar-servicio', [OrdenController::class, 'eliminarServicio']);
 
 // Ventas
 $router->get('/ventas', [VentaController::class, 'index']);
@@ -87,6 +90,7 @@ $router->post('/gastos/eliminar', [GastoController::class, 'eliminar']);
 
 // Reportes
 $router->get('/reportes', [ReporteController::class, 'index']);
+$router->get('/reportes/exportar-pdf', [ReporteController::class, 'exportarPdf']);
 
 // Usuarios
 $router->get('/usuarios', [UsuarioController::class, 'index']);
@@ -103,9 +107,16 @@ $router->get('/configuracion/backup', [ConfiguracionController::class, 'backup']
 // Vehiculos
 $router->get('/vehiculos', [VehiculoController::class, 'index']);
 $router->get('/vehiculos/perfil', [VehiculoController::class, 'perfil']);
+$router->get('/vehiculos/historial', [VehiculoController::class, 'historial']);
 $router->post('/vehiculos/guardar', [VehiculoController::class, 'store']);
 $router->post('/vehiculos/actualizar', [VehiculoController::class, 'update']);
 $router->post('/vehiculos/cambiar-estado', [VehiculoController::class, 'cambiarEstado']);
+
+// Servicios (RF-05)
+$router->get('/servicios', [ServicioController::class, 'index']);
+$router->post('/servicios/guardar', [ServicioController::class, 'store']);
+$router->post('/servicios/actualizar', [ServicioController::class, 'update']);
+$router->post('/servicios/cambiar-estado', [ServicioController::class, 'cambiarEstado']);
 
 // Pagos / Caja
 $router->get('/pagos', [PagoController::class, 'index']);

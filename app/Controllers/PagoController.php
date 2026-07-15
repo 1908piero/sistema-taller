@@ -12,7 +12,6 @@ class PagoController extends BaseController {
         $fecha = $_GET['fecha'] ?? date('Y-m-d');
         $pagos = $pagoModel->getAll();
 
-        // Filtrar por fecha si se especifica
         if ($fecha) {
             $pagos = array_filter($pagos, function($p) use ($fecha) {
                 return substr($p->fecha, 0, 10) === $fecha;
@@ -44,6 +43,8 @@ class PagoController extends BaseController {
 
             $pagoModel = new Pago();
             if ($pagoModel->create($data)) {
+                $id = $this->db->lastInsertId();
+                $this->registrarAuditoria('pagos', $id, 'crear', null, $data);
                 $ref = $_POST['ref'] ?? '/pagos';
                 $allowed = ['/pagos', '/pagos/caja'];
                 if (!in_array($ref, $allowed)) $ref = '/pagos';
@@ -61,6 +62,7 @@ class PagoController extends BaseController {
             $id = $_POST['id'];
             $pagoModel = new Pago();
             $pagoModel->delete($id);
+            $this->registrarAuditoria('pagos', $id, 'eliminar', null, null);
             if (isset($_SERVER['HTTP_REFERER'])) {
                 header("Location: " . $_SERVER['HTTP_REFERER']);
             } else {
@@ -74,7 +76,6 @@ class PagoController extends BaseController {
         $fecha = $_GET['fecha'] ?? date('Y-m-d');
 
         $ordenModel = new Orden();
-        // Ordenes reparadas listas para pagar
         $ordenes = $ordenModel->getAllByEstado('reparado');
 
         $resumen = $pagoModel->getResumenDia($fecha);

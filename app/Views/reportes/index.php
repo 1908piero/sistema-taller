@@ -3,6 +3,9 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Reportes Gerenciales</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="/reportes/exportar-pdf?desde=<?php echo $fechaInicio; ?>&hasta=<?php echo $fechaFin; ?>" class="btn btn-sm btn-danger me-2" target="_blank">
+            <i class="fa-solid fa-file-pdf"></i> Exportar PDF
+        </a>
         <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
             <i class="fa-solid fa-print"></i> Imprimir
         </button>
@@ -92,6 +95,84 @@
             <div class="card-body">
                 <div style="position: relative; height: 300px; width: 100%;">
                     <canvas id="chartHistorial"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- RF-10: Tablas detalladas -->
+<div class="row mt-4">
+    <div class="col-12 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white fw-bold d-flex justify-content-between">
+                <span><i class="fa-solid fa-receipt me-2"></i> Detalle de Ventas</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr><th>#</th><th>Cliente</th><th>Fecha</th><th class="text-end">Total</th></tr>
+                        </thead>
+                        <tbody>
+                            <?php if(!empty($reporteCompleto['ventas'])): ?>
+                                <?php foreach($reporteCompleto['ventas'] as $v): ?>
+                                <tr><td><?php echo $v->id; ?></td><td><?php echo htmlspecialchars($v->cliente_nombre ?? 'General'); ?></td><td><?php echo date('d/m/Y H:i', strtotime($v->fecha)); ?></td><td class="text-end"><?php echo $sistema->simbolo_moneda . ' ' . number_format($v->total, 2); ?></td></tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr><td colspan="4" class="text-center text-muted">Sin ventas en el período.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white fw-bold"><i class="fa-solid fa-toolbox me-2"></i> Órdenes Entregadas</div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr><th>#</th><th>Cliente</th><th>Total</th></tr>
+                        </thead>
+                        <tbody>
+                            <?php if(!empty($reporteCompleto['ordenes'])): ?>
+                                <?php foreach($reporteCompleto['ordenes'] as $o): ?>
+                                <tr><td>ORD-<?php echo str_pad($o->id, 4, '0', STR_PAD_LEFT); ?></td><td><?php echo htmlspecialchars($o->cliente_nombre); ?></td><td class="text-end"><?php echo $sistema->simbolo_moneda . ' ' . number_format($o->total, 2); ?></td></tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr><td colspan="3" class="text-center text-muted">Sin entregas en el período.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white fw-bold"><i class="fa-solid fa-triangle-exclamation me-2"></i> Alertas Stock Bajo</div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr><th>Producto</th><th>Stock</th><th>Mínimo</th></tr>
+                        </thead>
+                        <tbody>
+                            <?php if(!empty($reporteCompleto['stock_bajo'])): ?>
+                                <?php foreach($reporteCompleto['stock_bajo'] as $p): ?>
+                                <tr><td><?php echo htmlspecialchars($p->nombre); ?></td><td><span class="badge bg-danger"><?php echo $p->stock; ?></span></td><td><?php echo $p->stock_minimo ?? 5; ?></td></tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr><td colspan="3" class="text-center text-success">Todo en niveles óptimos.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

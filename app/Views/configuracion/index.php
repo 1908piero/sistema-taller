@@ -7,8 +7,8 @@
 <?php if (isset($_GET['msg'])): ?>
     <div class="alert alert-info alert-dismissible fade show">
         <?php 
-            if($_GET['msg'] == 'actualizado') echo "<i class='fa-solid fa-check-circle'></i> Datos actualizados correctamente.";
-            elseif($_GET['msg'] == 'error_backup') echo "<i class='fa-solid fa-triangle-exclamation'></i> Error al generar el respaldo.";
+            if($_GET['msg'] == 'actualizado') echo "<i class='fa-solid fa-check-circle'></i> <strong>MSJ-33:</strong> Datos actualizados correctamente.";
+            elseif($_GET['msg'] == 'error_backup') echo "<i class='fa-solid fa-triangle-exclamation'></i> <strong>MSJ-35:</strong> Error al generar la copia de seguridad.";
             else echo "Operación realizada.";
         ?>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -122,7 +122,7 @@
                 <div class="card-body">
                     <p class="small text-muted">Descarga una copia completa de tu base de datos (Ventas, Clientes, Productos, etc.) para guardarla en un lugar seguro.</p>
                     <a href="/configuracion/backup" class="btn btn-outline-danger w-100">
-                        <i class="fa-solid fa-download me-2"></i> Descargar Respaldo (.sql)
+                        <i class="fa-solid fa-download me-2"></i> MSJ-34: Descargar Respaldo (.sql)
                     </a>
                 </div>
             </div>

@@ -15,11 +15,9 @@ class ProductoController extends BaseController {
         ]);
     }
 
-    // --- CORREGIDO: Ver Historial ---
     public function historial() {
         $id = $_GET['id'] ?? null;
         
-        // 1. Validar ID
         if (!$id) { 
             header('Location: /productos'); 
             exit; 
@@ -28,7 +26,6 @@ class ProductoController extends BaseController {
         $prodModel = new Producto();
         $producto = $prodModel->getById($id);
 
-        // 2. Seguridad: Si el producto no existe, volver atrás
         if (!$producto) {
             header('Location: /productos?msg=error_producto');
             exit;
@@ -57,7 +54,10 @@ class ProductoController extends BaseController {
             }
 
             $prodModel = new Producto();
+            $anterior = $prodModel->getById($id);
             if ($prodModel->ajustarStock($id, $tipo, $cantidad, $motivo, $usuarioId)) {
+                $despues = $prodModel->getById($id);
+                $this->registrarAuditoria('productos', $id, 'ajustar_stock', $anterior, $despues);
                 header('Location: /productos?msg=ajuste_ok');
             } else {
                 header('Location: /productos?msg=error_stock');
@@ -74,6 +74,7 @@ class ProductoController extends BaseController {
                 'nombre' => $_POST['nombre'],
                 'categoria' => $_POST['categoria'],
                 'stock' => $_POST['stock'],
+                'stock_minimo' => $_POST['stock_minimo'] ?? 5,
                 'precio_compra' => $_POST['precio_compra'],
                 'precio_venta' => $_POST['precio_venta'],
                 'imagen' => $imagen
@@ -81,6 +82,8 @@ class ProductoController extends BaseController {
 
             $prodModel = new Producto();
             if ($prodModel->create($data)) {
+                $id = $this->db->lastInsertId();
+                $this->registrarAuditoria('productos', $id, 'crear', null, $data);
                 header('Location: /productos?msg=guardado');
             } else {
                 error_log("[PRODUCTO ERROR] create failed. codigo={$data['codigo']} nombre={$data['nombre']} imagen=" . (is_string($data['imagen']) ? substr($data['imagen'], 0, 50) : 'null'));
@@ -91,20 +94,25 @@ class ProductoController extends BaseController {
 
     public function update() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['id'];
+            $prodModel = new Producto();
+            $anterior = $prodModel->getById($id);
+
             $imagen = $this->procesarImagenSubida('imagen', '/../../public/uploads/productos/', 'prod');
 
             $data = [
-                'id' => $_POST['id'],
+                'id' => $id,
                 'codigo' => $_POST['codigo'],
                 'nombre' => $_POST['nombre'],
                 'categoria' => $_POST['categoria'],
+                'stock_minimo' => $_POST['stock_minimo'] ?? 5,
                 'precio_compra' => $_POST['precio_compra'],
                 'precio_venta' => $_POST['precio_venta'],
                 'imagen' => $imagen
             ];
 
-            $prodModel = new Producto();
             if ($prodModel->update($data)) {
+                $this->registrarAuditoria('productos', $id, 'actualizar', $anterior, $data);
                 header('Location: /productos?msg=actualizado');
             } else {
                 error_log("[PRODUCTO ERROR] update failed. id={$data['id']} codigo={$data['codigo']}");
@@ -119,6 +127,7 @@ class ProductoController extends BaseController {
             $estado = $_POST['nuevo_estado'];
             $prodModel = new Producto();
             if ($prodModel->updateStatus($id, $estado)) {
+                $this->registrarAuditoria('productos', $id, 'cambiar_estado', null, ['estado' => $estado]);
                 header('Location: /productos?msg=estado_cambiado');
             }
         }

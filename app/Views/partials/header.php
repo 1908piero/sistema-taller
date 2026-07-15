@@ -54,6 +54,8 @@
             <li><a href="/ordenes" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/ordenes') !== false) ? 'active' : ''; ?>"><i class="fa-solid fa-clipboard-list me-2"></i> Órdenes</a></li>
             <li><a href="/clientes" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/clientes') !== false) ? 'active' : ''; ?>"><i class="fa-solid fa-users me-2"></i> Clientes</a></li>
             <li><a href="/vehiculos" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/vehiculos') !== false) ? 'active' : ''; ?>"><i class="fa-solid fa-car me-2"></i> Vehículos</a></li>
+            <li><a href="/vehiculos/historial" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/vehiculos/historial') !== false) ? 'active' : ''; ?>"><i class="fa-solid fa-clock-rotate-left me-2"></i> Historial Veh.</a></li>
+            <li><a href="/servicios" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/servicios') !== false) ? 'active' : ''; ?>"><i class="fa-solid fa-list-check me-2"></i> Servicios</a></li>
             <li><a href="/productos" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/productos') !== false) ? 'active' : ''; ?>"><i class="fa-solid fa-box-open me-2"></i> Inventario</a></li>
             <li><a href="/ventas" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/ventas') !== false) ? 'active' : ''; ?>"><i class="fa-solid fa-cart-shopping me-2"></i> Ventas</a></li>
             

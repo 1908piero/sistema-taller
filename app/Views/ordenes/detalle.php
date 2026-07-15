@@ -1,5 +1,13 @@
 <?php require_once __DIR__ . '/../partials/header.php'; ?>
 
+<?php if (isset($_GET['msg'])): ?>
+    <?php if($_GET['msg'] == 'diagnostico_ok'): ?>
+        <div class="alert alert-success alert-dismissible fade show"><strong>MSJ-26:</strong> Diagnóstico guardado correctamente.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'diagnostico_error'): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-27:</strong> Error al guardar el diagnóstico.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php endif; ?>
+<?php endif; ?>
+
 <div class="d-flex justify-content-between align-items-center mb-3">
     <a href="/ordenes" class="btn btn-outline-secondary btn-sm">
         <i class="fa-solid fa-arrow-left"></i> Volver al listado
@@ -104,11 +112,12 @@
                 <form action="/ordenes/diagnostico" method="POST">
                     <input type="hidden" name="orden_id" value="<?php echo $orden->id; ?>">
                     <div class="mb-2">
-                        <textarea class="form-control" name="diagnostico" rows="5" placeholder="Escriba aquí el diagnóstico detallado..."><?php echo $orden->observaciones_tecnicas; ?></textarea>
+                        <textarea class="form-control" name="diagnostico" rows="5" placeholder="Escriba aquí el diagnóstico detallado..."><?php echo $orden->observaciones_tecnicas ?: $orden->diagnostico; ?></textarea>
                     </div>
                     <div class="d-grid">
                         <button type="submit" class="btn btn-sm btn-info text-white">Guardar Informe</button>
                     </div>
+                    <small class="text-muted">MSJ-26: El diagnóstico quedará registrado en el historial.</small>
                 </form>
             </div>
         </div>
@@ -124,15 +133,84 @@
     </div>
 
     <div class="col-md-8">
+        <!-- RF-05: Servicios del Catálogo -->
+        <div class="card shadow-sm mb-3 border-success">
+            <div class="card-header bg-success text-white fw-bold">
+                <i class="fa-solid fa-list me-2"></i> Servicios <small>(MSJ-29: Servicios del catálogo)</small>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead class="table-success">
+                        <tr>
+                            <th>Servicio</th>
+                            <th>Técnico</th>
+                            <th class="text-center">Cant.</th>
+                            <th class="text-end">P. Unit</th>
+                            <th class="text-end">Subtotal</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if(empty($servicios)): ?>
+                            <tr><td colspan="6" class="text-center text-muted py-2">No se han agregado servicios.</td></tr>
+                        <?php else: ?>
+                            <?php foreach($servicios as $sv): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($sv->servicio_nombre); ?></td>
+                                    <td><small><?php echo htmlspecialchars($sv->tecnico_asignado ?: '-'); ?></small></td>
+                                    <td class="text-center"><?php echo $sv->cantidad; ?></td>
+                                    <td class="text-end"><?php echo $sistema->simbolo_moneda . number_format($sv->precio_unitario, 2); ?></td>
+                                    <td class="text-end"><?php echo $sistema->simbolo_moneda . number_format($sv->subtotal, 2); ?></td>
+                                    <td class="text-end">
+                                        <?php if($orden->estado != 'entregado'): ?>
+                                        <form action="/ordenes/eliminar-servicio" method="POST" onsubmit="return confirm('¿Eliminar servicio?');">
+                                            <input type="hidden" name="detalle_id" value="<?php echo $sv->id; ?>">
+                                            <input type="hidden" name="orden_id" value="<?php echo $orden->id; ?>">
+                                            <button type="submit" class="btn btn-sm text-danger"><i class="fa-solid fa-trash"></i></button>
+                                        </form>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                        <?php if($orden->estado != 'entregado'): ?>
+                        <tr class="bg-light">
+                            <form action="/ordenes/agregar-servicio" method="POST">
+                                <input type="hidden" name="orden_id" value="<?php echo $orden->id; ?>">
+                                <td>
+                                    <select class="form-select form-select-sm" name="servicio_id" required>
+                                        <option value="">+ Seleccionar Servicio</option>
+                                        <?php foreach($serviciosCatalogo ?? [] as $sc): ?>
+                                            <option value="<?php echo $sc->id; ?>"><?php echo htmlspecialchars($sc->nombre); ?> (<?php echo $sistema->simbolo_moneda . $sc->precio; ?>)</option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" name="tecnico_asignado" placeholder="Técnico">
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm" name="cantidad" value="1" min="1">
+                                </td>
+                                <td colspan="3">
+                                    <button type="submit" class="btn btn-sm btn-success w-100"><i class="fa-solid fa-plus"></i> Agregar</button>
+                                </td>
+                            </form>
+                        </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <span class="fw-bold"><i class="fa-solid fa-wrench me-2"></i> Repuestos y Servicios</span>
+                <span class="fw-bold"><i class="fa-solid fa-wrench me-2"></i> Repuestos y Materiales</span>
             </div>
             <div class="card-body p-0">
                 <table class="table table-striped mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Concepto</th>
+                            <th>Producto</th>
                             <th class="text-center">Cant.</th>
                             <th class="text-end">P. Unit</th>
                             <th class="text-end">Subtotal</th>
@@ -189,7 +267,7 @@
                     </tbody>
                     <tfoot class="border-top">
                         <tr>
-                            <td colspan="3" class="text-end align-middle"><strong>Mano de Obra / Servicio:</strong></td>
+                            <td colspan="3" class="text-end align-middle"><strong>Mano de Obra:</strong></td>
                             <td class="text-end">
                                 <?php if($orden->estado != 'entregado'): ?>
                                     <form action="/ordenes/mano-obra" method="POST" class="d-flex justify-content-end">
@@ -206,7 +284,7 @@
                             <td></td>
                         </tr>
                         <tr class="table-dark fs-5">
-                            <td colspan="3" class="text-end"><strong>TOTAL:</strong></td>
+                            <td colspan="3" class="text-end"><strong>TOTAL GENERAL:</strong></td>
                             <td class="text-end fw-bold"><?php echo $sistema->simbolo_moneda . number_format($orden->total, 2); ?></td>
                             <td></td>
                         </tr>

@@ -43,6 +43,8 @@ class VehiculoController extends BaseController {
 
             $vehiculoModel = new Vehiculo();
             if ($vehiculoModel->create($data)) {
+                $id = $this->db->lastInsertId();
+                $this->registrarAuditoria('vehiculos', $id, 'crear', null, $data);
                 header('Location: /vehiculos?msg=guardado');
                 exit;
             } else {
@@ -54,8 +56,12 @@ class VehiculoController extends BaseController {
 
     public function update() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['id'];
+            $vehiculoModel = new Vehiculo();
+            $anterior = $vehiculoModel->getById($id);
+
             $data = [
-                'id' => $_POST['id'],
+                'id' => $id,
                 'cliente_id' => $_POST['cliente_id'],
                 'placa' => $_POST['placa'],
                 'marca' => $_POST['marca'],
@@ -67,8 +73,8 @@ class VehiculoController extends BaseController {
                 'observaciones' => $_POST['observaciones'] ?? null,
             ];
 
-            $vehiculoModel = new Vehiculo();
             if ($vehiculoModel->update($data)) {
+                $this->registrarAuditoria('vehiculos', $id, 'actualizar', $anterior, $data);
                 header('Location: /vehiculos?msg=actualizado');
                 exit;
             } else {
@@ -85,6 +91,7 @@ class VehiculoController extends BaseController {
             
             $vehiculoModel = new Vehiculo();
             $vehiculoModel->updateStatus($id, $nuevoEstado);
+            $this->registrarAuditoria('vehiculos', $id, 'cambiar_estado', null, ['estado' => $nuevoEstado]);
             
             if (isset($_SERVER['HTTP_REFERER'])) {
                 header("Location: " . $_SERVER['HTTP_REFERER']);
@@ -111,6 +118,27 @@ class VehiculoController extends BaseController {
             'titulo' => 'Vehículo: ' . $vehiculo->placa,
             'vehiculo' => $vehiculo,
             'ordenes' => $ordenes
+        ]);
+    }
+
+    // RF-11: Historial de servicios por vehículo
+    public function historial() {
+        $search = $_GET['search'] ?? '';
+        $resultados = [];
+
+        if ($search) {
+            $vehiculoModel = new Vehiculo();
+            $resultados = $vehiculoModel->searchByPlaca($search);
+            // Para cada resultado, cargar ordenes
+            foreach ($resultados as &$v) {
+                $v->ordenes = $vehiculoModel->getHistorialOrdenes($v->id);
+            }
+        }
+
+        $this->view('vehiculos/historial', [
+            'titulo' => 'Historial de Vehículos',
+            'search' => $search,
+            'resultados' => $resultados
         ]);
     }
 }

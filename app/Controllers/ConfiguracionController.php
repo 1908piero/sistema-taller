@@ -38,6 +38,7 @@ class ConfiguracionController extends BaseController {
 
             $configModel = new Configuracion();
             if ($configModel->update($data)) {
+                $this->registrarAuditoria('configuracion', 1, 'actualizar', null, $data);
                 header('Location: /configuracion?msg=actualizado');
             } else {
                 error_log("[CONFIG ERROR] update failed. logo=" . (isset($logo) ? (strpos($logo, 'data:') === 0 ? 'base64' : $logo) : 'none'));
@@ -46,9 +47,7 @@ class ConfiguracionController extends BaseController {
         }
     }
 
-    // --- NUEVO: Generar Backup de la Base de Datos ---
     public function backup() {
-        // Solo administradores pueden descargar la base de datos
         if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
             header('Location: /?msg=no_autorizado');
             exit;
@@ -58,7 +57,6 @@ class ConfiguracionController extends BaseController {
             $db = $this->db;
             $tables = [];
             
-            // 1. Obtener todas las tablas
             $stmt = $db->query("SHOW TABLES");
             while ($row = $stmt->fetch(PDO::FETCH_NUM)) {
                 $tables[] = $row[0];
@@ -68,13 +66,10 @@ class ConfiguracionController extends BaseController {
             $sqlScript .= "-- Fecha: " . date('Y-m-d H:i:s') . "\n\n";
             $sqlScript .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
 
-            // 2. Recorrer tablas
             foreach ($tables as $table) {
-                // Estructura de la tabla
                 $row = $db->query("SHOW CREATE TABLE $table")->fetch(PDO::FETCH_NUM);
                 $sqlScript .= "\n\n" . $row[1] . ";\n\n";
 
-                // Datos de la tabla
                 $rows = $db->query("SELECT * FROM $table");
                 $columnCount = $rows->columnCount();
 
@@ -98,7 +93,6 @@ class ConfiguracionController extends BaseController {
 
             $sqlScript .= "\n\nSET FOREIGN_KEY_CHECKS=1;";
 
-            // 3. Forzar descarga del archivo
             $backupFilename = 'db_backup_' . date('Y-m-d_H-i-s') . '.sql';
             
             header('Content-Description: File Transfer');

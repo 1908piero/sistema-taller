@@ -46,8 +46,9 @@ class Producto extends BaseModel {
     // Crear producto
     public function create($data) {
         try {
-            $sql = "INSERT INTO productos (codigo, nombre, categoria, stock, precio_compra, precio_venta, imagen, estado) 
-                    VALUES (:codigo, :nombre, :cat, :stock, :p_compra, :p_venta, :img, 1)";
+            $stockMinimo = $data['stock_minimo'] ?? 5;
+            $sql = "INSERT INTO productos (codigo, nombre, categoria, stock, stock_minimo, precio_compra, precio_venta, imagen, estado) 
+                    VALUES (:codigo, :nombre, :cat, :stock, :smin, :p_compra, :p_venta, :img, 1)";
             
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
@@ -55,6 +56,7 @@ class Producto extends BaseModel {
                 ':nombre' => $data['nombre'],
                 ':cat' => $data['categoria'],
                 ':stock' => $data['stock'],
+                ':smin' => $stockMinimo,
                 ':p_compra' => $data['precio_compra'],
                 ':p_venta' => $data['precio_venta'],
                 ':img' => $data['imagen']
@@ -68,7 +70,7 @@ class Producto extends BaseModel {
     // Actualizar datos básicos
     public function update($data) {
         try {
-            $sql = "UPDATE productos SET codigo=:codigo, nombre=:nombre, categoria=:cat, precio_compra=:p_compra, precio_venta=:p_venta";
+            $sql = "UPDATE productos SET codigo=:codigo, nombre=:nombre, categoria=:cat, stock_minimo=:smin, precio_compra=:p_compra, precio_venta=:p_venta";
             
             if ($data['imagen']) {
                 $sql .= ", imagen=:img";
@@ -79,7 +81,8 @@ class Producto extends BaseModel {
             
             $params = [
                 ':codigo' => $data['codigo'], ':nombre' => $data['nombre'], 
-                ':cat' => $data['categoria'], ':p_compra' => $data['precio_compra'], 
+                ':cat' => $data['categoria'], ':smin' => $data['stock_minimo'] ?? 5,
+                ':p_compra' => $data['precio_compra'], 
                 ':p_venta' => $data['precio_venta'], ':id' => $data['id']
             ];
             

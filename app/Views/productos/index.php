@@ -57,8 +57,11 @@
                                 <td><?php echo $prod->codigo; ?></td>
                                 <td>
                                     <strong><?php echo $prod->nombre; ?></strong>
-                                    <?php if($prod->stock <= 5): ?>
-                                        <span class="badge bg-danger ms-1" style="font-size: 0.6em;">Bajo</span>
+                                    <?php 
+                                        $stockMinimo = $prod->stock_minimo ?? 5;
+                                        if($prod->stock <= $stockMinimo): 
+                                    ?>
+                                        <span class="badge bg-danger ms-1" style="font-size: 0.6em;">Stock Bajo (mín: <?php echo $stockMinimo; ?>)</span>
                                     <?php endif; ?>
                                 </td>
                                 <td><span class="badge bg-info text-dark"><?php echo ucfirst($prod->categoria); ?></span></td>
@@ -140,13 +143,17 @@
                                 </div>
                             </div>
                             <div class="row mb-3">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="form-label">Precio Compra</label>
                                     <input type="number" step="0.01" class="form-control" name="precio_compra" id="precio_compra">
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="form-label">Precio Venta *</label>
                                     <input type="number" step="0.01" class="form-control" name="precio_venta" id="precio_venta" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Stock Mínimo <small class="text-muted">(MSJ-32)</small></label>
+                                    <input type="number" class="form-control" name="stock_minimo" id="stock_minimo" value="5" min="0">
                                 </div>
                             </div>
                         </div>
@@ -237,6 +244,7 @@
         document.getElementById('stock').readOnly = true; // No editar stock aquí, usar ajuste
         document.getElementById('precio_compra').value = prod.precio_compra;
         document.getElementById('precio_venta').value = prod.precio_venta;
+        document.getElementById('stock_minimo').value = prod.stock_minimo || 5;
         
         if(prod.imagen) {
             if(prod.imagen.startsWith('data:')) document.getElementById('previewImg').src = prod.imagen;

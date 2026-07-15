@@ -64,6 +64,41 @@ class Reporte extends BaseModel {
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
+    // RF-10: Reporte completo detallado
+    public function getReporteCompleto($fechaInicio, $fechaFin) {
+        $reporte = [];
+
+        // Ventas del período
+        $sqlV = "SELECT v.*, c.nombre as cliente_nombre FROM ventas v 
+                 LEFT JOIN clientes c ON v.cliente_id = c.id 
+                 WHERE v.fecha BETWEEN :inicio AND :fin ORDER BY v.fecha DESC";
+        $stmt = $this->db->prepare($sqlV);
+        $stmt->execute([':inicio' => "$fechaInicio 00:00:00", ':fin' => "$fechaFin 23:59:59"]);
+        $reporte['ventas'] = $stmt->fetchAll(\PDO::FETCH_OBJ);
+
+        // Órdenes entregadas del período
+        $sqlO = "SELECT o.*, c.nombre as cliente_nombre FROM ordenes_servicio o 
+                 LEFT JOIN clientes c ON o.cliente_id = c.id 
+                 WHERE o.estado = 'entregado' AND o.fecha_entrega BETWEEN :inicio AND :fin ORDER BY o.fecha_entrega DESC";
+        $stmt = $this->db->prepare($sqlO);
+        $stmt->execute([':inicio' => "$fechaInicio 00:00:00", ':fin' => "$fechaFin 23:59:59"]);
+        $reporte['ordenes'] = $stmt->fetchAll(\PDO::FETCH_OBJ);
+
+        // Gastos del período
+        $sqlG = "SELECT * FROM gastos WHERE fecha BETWEEN :inicio AND :fin ORDER BY fecha DESC";
+        $stmt = $this->db->prepare($sqlG);
+        $stmt->execute([':inicio' => "$fechaInicio 00:00:00", ':fin' => "$fechaFin 23:59:59"]);
+        $reporte['gastos'] = $stmt->fetchAll(\PDO::FETCH_OBJ);
+
+        // Productos con stock bajo
+        $sqlP = "SELECT * FROM productos WHERE (stock_minimo IS NOT NULL AND stock <= stock_minimo) OR (stock_minimo IS NULL AND stock <= 5) ORDER BY stock ASC";
+        $stmt = $this->db->prepare($sqlP);
+        $stmt->execute();
+        $reporte['stock_bajo'] = $stmt->fetchAll(\PDO::FETCH_OBJ);
+
+        return $reporte;
+    }
+
     // Historial últimos 6 meses (Ingresos vs Gastos)
     public function getHistorialFinanciero() {
         // Obtenemos los últimos 6 meses

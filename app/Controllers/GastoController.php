@@ -6,9 +6,6 @@ use App\Models\Gasto;
 class GastoController extends BaseController {
 
     public function index() {
-        // Verificar permiso (Solo Admin debería ver finanzas, pero dejaremos a todos por ahora)
-        // if ($_SESSION['user_role'] !== 'admin') { header('Location: /'); exit; }
-
         $gastoModel = new Gasto();
         $gastos = $gastoModel->getAll();
 
@@ -28,6 +25,8 @@ class GastoController extends BaseController {
 
             $gastoModel = new Gasto();
             if ($gastoModel->create($data)) {
+                $id = $this->db->lastInsertId();
+                $this->registrarAuditoria('gastos', $id, 'crear', null, $data);
                 header('Location: /gastos?msg=guardado');
             } else {
                 header('Location: /gastos?msg=error');
@@ -40,6 +39,7 @@ class GastoController extends BaseController {
             $id = $_POST['id'];
             $gastoModel = new Gasto();
             if ($gastoModel->delete($id)) {
+                $this->registrarAuditoria('gastos', $id, 'eliminar', null, null);
                 header('Location: /gastos?msg=eliminado');
             } else {
                 header('Location: /gastos?msg=error');

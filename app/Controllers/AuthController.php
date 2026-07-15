@@ -5,64 +5,93 @@ use App\Models\Usuario;
 
 class AuthController extends BaseController {
 
-    // Mostrar el formulario de Login
+    private $maxIntentos = 3;
+    private $tiempoBloqueo = 15; // minutos
+
     public function login() {
-        // Si ya está logueado, mandar al dashboard
         if (isset($_SESSION['user_id'])) {
             header('Location: /');
             exit;
         }
-        
-        // Cargamos la vista de login (sin usar el layout principal porque es una pantalla distinta)
         require_once __DIR__ . '/../Views/auth/login.php';
     }
 
-    // Procesar el formulario
     public function authenticate() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = $_POST['email'] ?? '';
             $password = $_POST['password'] ?? '';
+            $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+
+            // RNF-02: Verificar bloqueo
+            $bloqueado = $this->estaBloqueado($email, $ip);
+            if ($bloqueado) {
+                header('Location: /login?error=bloqueado');
+                exit;
+            }
 
             $userModel = new Usuario();
             $usuario = $userModel->getByEmail($email);
 
             if ($usuario) {
-                // Verificamos contraseña
-                // Nota: password_verify es la forma segura. 
-                // Si tu clave en BD es texto plano '123456', esto fallará la primera vez. 
-                // Para arreglarlo rápido: si la clave coincide en texto plano, la actualizamos a Hash.
-                
                 $check = false;
                 if (password_verify($password, $usuario->password)) {
                     $check = true;
                 } elseif ($password === $usuario->password) {
-                    // PARCHE DE SEGURIDAD: Si la clave no estaba encriptada pero coincide, la encriptamos ahora.
                     $newHash = password_hash($password, PASSWORD_DEFAULT);
                     $this->db->prepare("UPDATE usuarios SET password = ? WHERE id = ?")->execute([$newHash, $usuario->id]);
                     $check = true;
                 }
 
                 if ($check) {
-                    // LOGIN EXITOSO
+                    // RNF-02: Limpiar intentos fallidos al loguear éxito
+                    $this->limpiarIntentos($email);
+
                     $_SESSION['user_id'] = $usuario->id;
                     $_SESSION['user_name'] = $usuario->nombre;
                     $_SESSION['user_role'] = $usuario->rol;
-                    
+
+                    // RN-08: Auditoría de login exitoso
+                    $this->registrarAuditoria('usuarios', $usuario->id, 'login', null, "Inicio de sesión exitoso - IP: $ip");
+
                     header('Location: /');
                     exit;
                 }
             }
 
-            // Si falla
+            // RNF-02: Registrar intento fallido
+            $this->registrarIntento($email, $ip);
+
             header('Location: /login?error=credenciales');
             exit;
         }
     }
 
-    // Cerrar Sesión
     public function logout() {
+        if (isset($_SESSION['user_id'])) {
+            $this->registrarAuditoria('usuarios', $_SESSION['user_id'], 'logout', null, "Cierre de sesión - IP: " . ($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0'));
+        }
         session_destroy();
         header('Location: /login');
         exit;
+    }
+
+    private function estaBloqueado($email, $ip) {
+        $desde = date('Y-m-d H:i:s', strtotime("-{$this->tiempoBloqueo} minutes"));
+        $stmt = $this->db->prepare("SELECT COUNT(*) as total FROM login_attempts 
+                                     WHERE (email = :email OR ip_address = :ip) 
+                                     AND attempted_at >= :desde");
+        $stmt->execute([':email' => $email, ':ip' => $ip, ':desde' => $desde]);
+        $total = $stmt->fetch(\PDO::FETCH_OBJ)->total;
+        return $total >= $this->maxIntentos;
+    }
+
+    private function registrarIntento($email, $ip) {
+        $stmt = $this->db->prepare("INSERT INTO login_attempts (email, ip_address) VALUES (:email, :ip)");
+        $stmt->execute([':email' => $email, ':ip' => $ip]);
+    }
+
+    private function limpiarIntentos($email) {
+        $stmt = $this->db->prepare("DELETE FROM login_attempts WHERE email = :email");
+        $stmt->execute([':email' => $email]);
     }
 }

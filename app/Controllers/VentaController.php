@@ -50,6 +50,7 @@ class VentaController extends BaseController {
             $ventaId = $ventaModel->create($data, $productos);
 
             if ($ventaId) {
+                $this->registrarAuditoria('ventas', $ventaId, 'crear', null, $data);
                 header('Location: /ventas?msg=guardado&id=' . $ventaId);
             } else {
                 header('Location: /ventas/crear?msg=error');
@@ -57,7 +58,6 @@ class VentaController extends BaseController {
         }
     }
 
-    // --- Ticket con Código de Barras (API) ---
     public function imprimir() {
         $id = $_GET['id'] ?? null;
         if (!$id) die("ID requerido");
@@ -72,7 +72,7 @@ class VentaController extends BaseController {
         $html = ob_get_clean();
 
         $options = new Options();
-        $options->set('isRemoteEnabled', true); // Permitir carga de API
+        $options->set('isRemoteEnabled', true);
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html);
         $dompdf->setPaper([0, 0, 226.77, 600], 'portrait'); 

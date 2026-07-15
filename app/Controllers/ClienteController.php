@@ -15,7 +15,6 @@ class ClienteController extends BaseController {
         ]);
     }
 
-    // --- NUEVO: Ver Perfil 360 del Cliente ---
     public function perfil() {
         $id = $_GET['id'] ?? null;
         if (!$id) { header('Location: /clientes'); exit; }
@@ -25,7 +24,6 @@ class ClienteController extends BaseController {
 
         if (!$cliente) { header('Location: /clientes'); exit; }
 
-        // Obtenemos toda la data relacionada
         $ordenes = $clienteModel->getOrdenes($id);
         $ventas = $clienteModel->getVentas($id);
         $stats = $clienteModel->getEstadisticas($id);
@@ -50,6 +48,8 @@ class ClienteController extends BaseController {
 
             $clienteModel = new Cliente();
             if ($clienteModel->create($data)) {
+                $id = $this->db->lastInsertId();
+                $this->registrarAuditoria('clientes', $id, 'crear', null, $data);
                 header('Location: /clientes?msg=guardado');
             } else {
                 header('Location: /clientes?msg=error');
@@ -59,16 +59,20 @@ class ClienteController extends BaseController {
 
     public function update() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['id'];
+            $clienteModel = new Cliente();
+            $anterior = $clienteModel->getById($id);
+
             $data = [
-                'id' => $_POST['id'],
+                'id' => $id,
                 'nombre' => $_POST['nombre'],
                 'telefono' => $_POST['telefono'],
                 'email' => $_POST['email'],
                 'direccion' => $_POST['direccion']
             ];
 
-            $clienteModel = new Cliente();
             if ($clienteModel->update($data)) {
+                $this->registrarAuditoria('clientes', $id, 'actualizar', $anterior, $data);
                 header('Location: /clientes?msg=actualizado');
             } else {
                 header('Location: /clientes?msg=error');
@@ -83,8 +87,8 @@ class ClienteController extends BaseController {
             
             $clienteModel = new Cliente();
             $clienteModel->updateStatus($id, $nuevoEstado);
+            $this->registrarAuditoria('clientes', $id, 'cambiar_estado', null, ['estado' => $nuevoEstado]);
             
-            // Volver a la página anterior (útil si estamos en el perfil)
             if(isset($_SERVER['HTTP_REFERER'])) {
                 header("Location: " . $_SERVER['HTTP_REFERER']);
             } else {
