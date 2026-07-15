@@ -77,25 +77,39 @@ class Cliente extends BaseModel {
         return $stmt->fetch(PDO::FETCH_OBJ)->c;
     }
 
-    // Métodos existentes de escritura...
+    // RN-01: Buscar por DNI (validar duplicados)
+    public function getByDni($dni, $excluirId = null) {
+        try {
+            $sql = "SELECT id FROM clientes WHERE dni = :dni";
+            if ($excluirId) { $sql .= " AND id != :eid"; }
+            $stmt = $this->db->prepare($sql);
+            $params = [':dni' => $dni];
+            if ($excluirId) { $params[':eid'] = $excluirId; }
+            $stmt->execute($params);
+            return $stmt->fetch(PDO::FETCH_OBJ);
+        } catch (\Exception $e) { return null; }
+    }
+
     public function create($data) {
         try {
-            $sql = "INSERT INTO clientes (nombre, telefono, email, direccion, estado) VALUES (:nombre, :telefono, :email, :direccion, 1)";
+            $sql = "INSERT INTO clientes (nombre, dni, telefono, email, direccion, estado) VALUES (:nombre, :dni, :telefono, :email, :direccion, 1)";
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
-                ':nombre' => $data['nombre'], ':telefono' => $data['telefono'],
-                ':email' => $data['email'], ':direccion' => $data['direccion']
+                ':nombre' => $data['nombre'], ':dni' => $data['dni'] ?? null,
+                ':telefono' => $data['telefono'], ':email' => $data['email'],
+                ':direccion' => $data['direccion']
             ]);
         } catch (\Exception $e) { return false; }
     }
 
     public function update($data) {
         try {
-            $sql = "UPDATE clientes SET nombre=:nombre, telefono=:telefono, email=:email, direccion=:direccion WHERE id=:id";
+            $sql = "UPDATE clientes SET nombre=:nombre, dni=:dni, telefono=:telefono, email=:email, direccion=:direccion WHERE id=:id";
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
-                ':nombre' => $data['nombre'], ':telefono' => $data['telefono'],
-                ':email' => $data['email'], ':direccion' => $data['direccion'], ':id' => $data['id']
+                ':nombre' => $data['nombre'], ':dni' => $data['dni'] ?? null,
+                ':telefono' => $data['telefono'], ':email' => $data['email'],
+                ':direccion' => $data['direccion'], ':id' => $data['id']
             ]);
         } catch (\Exception $e) { return false; }
     }

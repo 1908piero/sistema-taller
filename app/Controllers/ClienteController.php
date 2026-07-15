@@ -39,14 +39,23 @@ class ClienteController extends BaseController {
 
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $dni = $_POST['dni'] ?? '';
+            $clienteModel = new Cliente();
+
+            // RN-01: Validar DNI duplicado
+            if (!empty($dni) && $clienteModel->getByDni($dni)) {
+                header('Location: /clientes?msg=dni_duplicado');
+                exit;
+            }
+
             $data = [
                 'nombre' => $_POST['nombre'],
+                'dni' => $dni,
                 'telefono' => $_POST['telefono'],
                 'email' => $_POST['email'],
                 'direccion' => $_POST['direccion']
             ];
 
-            $clienteModel = new Cliente();
             if ($clienteModel->create($data)) {
                 $id = $this->db->lastInsertId();
                 $this->registrarAuditoria('clientes', $id, 'crear', null, $data);
@@ -60,12 +69,20 @@ class ClienteController extends BaseController {
     public function update() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = $_POST['id'];
+            $dni = $_POST['dni'] ?? '';
             $clienteModel = new Cliente();
             $anterior = $clienteModel->getById($id);
+
+            // RN-01: Validar DNI duplicado (excluyendo este registro)
+            if (!empty($dni) && $clienteModel->getByDni($dni, $id)) {
+                header('Location: /clientes?msg=dni_duplicado');
+                exit;
+            }
 
             $data = [
                 'id' => $id,
                 'nombre' => $_POST['nombre'],
+                'dni' => $dni,
                 'telefono' => $_POST['telefono'],
                 'email' => $_POST['email'],
                 'direccion' => $_POST['direccion']

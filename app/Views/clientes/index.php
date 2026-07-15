@@ -15,6 +15,7 @@
             if($_GET['msg'] == 'guardado') echo "Cliente registrado exitosamente.";
             elseif($_GET['msg'] == 'actualizado') echo "Datos del cliente actualizados.";
             elseif($_GET['msg'] == 'estado_cambiado') echo "El estado del cliente ha cambiado.";
+            elseif($_GET['msg'] == 'dni_duplicado') echo "<strong>RN-01:</strong> Ya existe un cliente con ese DNI. No se permiten duplicados.";
             else echo "Operación realizada correctamente.";
         ?>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -28,6 +29,7 @@
                 <thead class="table-dark">
                     <tr>
                         <th>Nombre</th>
+                        <th>DNI / RUC</th>
                         <th>Teléfono</th>
                         <th>Email</th>
                         <th>Estado</th>
@@ -42,6 +44,7 @@
                                     <strong><?php echo $cliente->nombre; ?></strong><br>
                                     <small class="text-muted"><?php echo $cliente->direccion; ?></small>
                                 </td>
+                                <td><code><?php echo htmlspecialchars($cliente->dni ?? '-'); ?></code></td>
                                 <td><?php echo $cliente->telefono; ?></td>
                                 <td><?php echo $cliente->email; ?></td>
                                 <td>
@@ -96,11 +99,15 @@
                         <input type="text" class="form-control" name="nombre" id="nombre" required>
                     </div>
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">DNI / RUC * <small>(identificador único)</small></label>
+                            <input type="text" class="form-control" name="dni" id="dni" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Teléfono</label>
                             <input type="text" class="form-control" name="telefono" id="telefono">
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Email</label>
                             <input type="email" class="form-control" name="email" id="email">
                         </div>
@@ -140,6 +147,7 @@
     function editarCliente(cliente) {
         document.getElementById('clienteId').value = cliente.id;
         document.getElementById('nombre').value = cliente.nombre;
+        document.getElementById('dni').value = cliente.dni || '';
         document.getElementById('telefono').value = cliente.telefono;
         document.getElementById('email').value = cliente.email;
         document.getElementById('direccion').value = cliente.direccion;
