@@ -39,6 +39,18 @@ class Vehiculo extends BaseModel {
         } catch (\Exception $e) { return []; }
     }
 
+    public function getByPlaca($placa, $excluirId = null) {
+        try {
+            $sql = "SELECT id FROM vehiculos WHERE placa = :placa";
+            if ($excluirId) { $sql .= " AND id != :eid"; }
+            $stmt = $this->db->prepare($sql);
+            $params = [':placa' => strtoupper($placa)];
+            if ($excluirId) { $params[':eid'] = $excluirId; }
+            $stmt->execute($params);
+            return $stmt->fetch(PDO::FETCH_OBJ);
+        } catch (\Exception $e) { return null; }
+    }
+
     public function searchByPlaca($placa) {
         try {
             $stmt = $this->db->prepare("

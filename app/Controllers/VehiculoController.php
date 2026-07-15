@@ -29,9 +29,27 @@ class VehiculoController extends BaseController {
 
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $vehiculoModel = new Vehiculo();
+
+            // RN-02: Validar que el cliente exista
+            $clienteModel = new \App\Models\Cliente();
+            $cliente = $clienteModel->getById($_POST['cliente_id']);
+            if (!$cliente) {
+                header('Location: /vehiculos?msg=cliente_invalido');
+                exit;
+            }
+
+            $placa = strtoupper(trim($_POST['placa']));
+
+            // RN-02: Validar placa única
+            if ($vehiculoModel->getByPlaca($placa)) {
+                header('Location: /vehiculos?msg=placa_duplicada');
+                exit;
+            }
+
             $data = [
                 'cliente_id' => $_POST['cliente_id'],
-                'placa' => $_POST['placa'],
+                'placa' => $placa,
                 'marca' => $_POST['marca'],
                 'modelo' => $_POST['modelo'],
                 'año' => $_POST['año'] ?? null,
@@ -41,7 +59,6 @@ class VehiculoController extends BaseController {
                 'observaciones' => $_POST['observaciones'] ?? null,
             ];
 
-            $vehiculoModel = new Vehiculo();
             if ($vehiculoModel->create($data)) {
                 $id = $this->db->lastInsertId();
                 $this->registrarAuditoria('vehiculos', $id, 'crear', null, $data);
@@ -58,12 +75,29 @@ class VehiculoController extends BaseController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = $_POST['id'];
             $vehiculoModel = new Vehiculo();
+
+            // RN-02: Validar que el cliente exista
+            $clienteModel = new \App\Models\Cliente();
+            $cliente = $clienteModel->getById($_POST['cliente_id']);
+            if (!$cliente) {
+                header('Location: /vehiculos?msg=cliente_invalido');
+                exit;
+            }
+
+            $placa = strtoupper(trim($_POST['placa']));
+
+            // RN-02: Validar placa única (excluyendo este registro)
+            if ($vehiculoModel->getByPlaca($placa, $id)) {
+                header('Location: /vehiculos?msg=placa_duplicada');
+                exit;
+            }
+
             $anterior = $vehiculoModel->getById($id);
 
             $data = [
                 'id' => $id,
                 'cliente_id' => $_POST['cliente_id'],
-                'placa' => $_POST['placa'],
+                'placa' => $placa,
                 'marca' => $_POST['marca'],
                 'modelo' => $_POST['modelo'],
                 'año' => $_POST['año'] ?? null,

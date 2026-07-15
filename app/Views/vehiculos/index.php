@@ -1,5 +1,19 @@
 <?php require_once __DIR__ . '/../partials/header.php'; ?>
 
+<?php if (isset($_GET['msg'])): ?>
+    <?php if ($_GET['msg'] == 'guardado'): ?>
+        <div class="alert alert-success">Vehículo registrado correctamente.</div>
+    <?php elseif ($_GET['msg'] == 'actualizado'): ?>
+        <div class="alert alert-success">Vehículo actualizado.</div>
+    <?php elseif ($_GET['msg'] == 'placa_duplicada'): ?>
+        <div class="alert alert-danger"><strong>RN-02:</strong> Ya existe un vehículo con esa placa. La placa debe ser única.</div>
+    <?php elseif ($_GET['msg'] == 'cliente_invalido'): ?>
+        <div class="alert alert-danger"><strong>RN-02:</strong> El cliente seleccionado no existe. Seleccione un cliente válido.</div>
+    <?php elseif ($_GET['msg'] == 'error'): ?>
+        <div class="alert alert-danger">Error al guardar. Verifique los datos.</div>
+    <?php endif; ?>
+<?php endif; ?>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0"><i class="fa-solid fa-car me-2"></i> Gestión de Vehículos</h4>
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalVehiculo">
