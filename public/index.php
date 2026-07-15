@@ -29,7 +29,6 @@ use App\Controllers\RastreoController;
 use App\Controllers\VehiculoController;
 use App\Controllers\PagoController;
 use App\Controllers\ServicioController;
-use App\Controllers\AdminController;
 
 $router = new Router();
 
@@ -124,7 +123,5 @@ $router->get('/pagos', [PagoController::class, 'index']);
 $router->get('/pagos/caja', [PagoController::class, 'caja']);
 $router->post('/pagos/guardar', [PagoController::class, 'store']);
 $router->post('/pagos/eliminar', [PagoController::class, 'eliminar']);
-
-$router->get('/admin/migrar', [AdminController::class, 'migrar']);
 
 $router->run();
