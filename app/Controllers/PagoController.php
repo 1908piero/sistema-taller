@@ -4,6 +4,8 @@ namespace App\Controllers;
 use App\Models\Pago;
 use App\Models\Orden;
 use App\Models\Cliente;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class PagoController extends BaseController {
 
@@ -32,10 +34,29 @@ class PagoController extends BaseController {
 
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $ref = $_POST['ref'] ?? '/pagos';
+            $allowed = ['/pagos', '/pagos/caja'];
+            if (!in_array($ref, $allowed)) $ref = '/pagos';
+
+            // RF-08: Validar que la orden exista
+            $ordenModel = new Orden();
+            $orden = $ordenModel->getById($_POST['orden_id']);
+            if (!$orden) {
+                header("Location: $ref?msg=orden_invalida");
+                exit;
+            }
+
+            // RF-08: Validar monto > 0
+            $monto = floatval($_POST['monto'] ?? 0);
+            if ($monto <= 0) {
+                header("Location: $ref?msg=monto_invalido");
+                exit;
+            }
+
             $data = [
                 'orden_id' => $_POST['orden_id'],
                 'cliente_id' => $_POST['cliente_id'],
-                'monto' => $_POST['monto'],
+                'monto' => $monto,
                 'metodo_pago' => $_POST['metodo_pago'],
                 'referencia' => $_POST['referencia'] ?? null,
                 'usuario_id' => $_SESSION['user_id'] ?? 1,
@@ -45,13 +66,10 @@ class PagoController extends BaseController {
             if ($pagoModel->create($data)) {
                 $id = $this->db->lastInsertId();
                 $this->registrarAuditoria('pagos', $id, 'crear', null, $data);
-                $ref = $_POST['ref'] ?? '/pagos';
-                $allowed = ['/pagos', '/pagos/caja'];
-                if (!in_array($ref, $allowed)) $ref = '/pagos';
-                header("Location: $ref");
+                header("Location: $ref?msg=ok&pago_id=$id");
                 exit;
             } else {
-                header('Location: /pagos?msg=error');
+                header("Location: $ref?msg=error");
                 exit;
             }
         }
@@ -69,6 +87,31 @@ class PagoController extends BaseController {
                 header('Location: /pagos');
             }
         }
+    }
+
+    // RF-09: Generar comprobante de pago en PDF
+    public function comprobante() {
+        $id = $_GET['id'] ?? null;
+        if (!$id) { die("ID de pago requerido"); }
+
+        $pagoModel = new Pago();
+        $pago = $pagoModel->getById($id);
+        if (!$pago) { die("Pago no encontrado"); }
+
+        $sistema = $this->config;
+
+        ob_start();
+        require __DIR__ . '/../Views/pagos/comprobante.php';
+        $html = ob_get_clean();
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper([0, 0, 226.77, 600], 'portrait');
+        $dompdf->render();
+        $dompdf->stream("COMPROBANTE_{$id}.pdf", ["Attachment" => false]);
+        exit;
     }
 
     public function caja() {

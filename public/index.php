@@ -123,5 +123,6 @@ $router->get('/pagos', [PagoController::class, 'index']);
 $router->get('/pagos/caja', [PagoController::class, 'caja']);
 $router->post('/pagos/guardar', [PagoController::class, 'store']);
 $router->post('/pagos/eliminar', [PagoController::class, 'eliminar']);
+$router->get('/pagos/comprobante', [PagoController::class, 'comprobante']);
 
 $router->run();

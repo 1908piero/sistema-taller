@@ -1,5 +1,21 @@
 <?php require_once __DIR__ . '/../partials/header.php'; ?>
 
+<?php if (isset($_GET['msg'])): ?>
+    <?php if ($_GET['msg'] == 'ok'): ?>
+        <div class="alert alert-success alert-dismissible fade show">
+            <strong>Pago registrado correctamente.</strong>
+            <a href="/pagos/comprobante?id=<?php echo $_GET['pago_id'] ?? 0; ?>" class="btn btn-sm btn-outline-primary ms-3" target="_blank"><i class="fa-solid fa-print"></i> Imprimir Comprobante</a>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    <?php elseif ($_GET['msg'] == 'orden_invalida'): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>RF-08:</strong> La orden de trabajo seleccionada no existe. Seleccione una orden válida.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif ($_GET['msg'] == 'monto_invalido'): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>RF-08:</strong> El monto debe ser mayor a 0. Ingrese un monto válido.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif ($_GET['msg'] == 'error'): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>Error:</strong> No se pudo registrar el pago. Verifique los datos.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php endif; ?>
+<?php endif; ?>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0"><i class="fa-solid fa-hand-holding-dollar me-2"></i> Registrar Pago</h4>
     <a href="/pagos" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left"></i> Volver a Caja</a>

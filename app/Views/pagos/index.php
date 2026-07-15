@@ -1,5 +1,15 @@
 <?php require_once __DIR__ . '/../partials/header.php'; ?>
 
+<?php if (isset($_GET['msg'])): ?>
+    <?php if ($_GET['msg'] == 'orden_invalida'): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>RF-08:</strong> La orden de trabajo seleccionada no existe.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif ($_GET['msg'] == 'monto_invalido'): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>RF-08:</strong> El monto debe ser mayor a 0.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif ($_GET['msg'] == 'error'): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>Error:</strong> No se pudo registrar el pago.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php endif; ?>
+<?php endif; ?>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0"><i class="fa-solid fa-cash-register me-2"></i> Caja y Pagos</h4>
     <div>
@@ -100,6 +110,7 @@
                             <td><?php echo htmlspecialchars($p->referencia ?: '-'); ?></td>
                             <td><?php echo htmlspecialchars($p->usuario_nombre); ?></td>
                             <td>
+                                <a href="/pagos/comprobante?id=<?php echo $p->id; ?>" class="btn btn-sm btn-outline-primary" target="_blank" title="Comprobante PDF"><i class="fa-solid fa-print"></i></a>
                                 <form method="POST" action="/pagos/eliminar" onsubmit="return confirm('¿Eliminar este pago?')" style="display:inline">
                                     <input type="hidden" name="id" value="<?php echo $p->id; ?>">
                                     <button type="submit" class="btn btn-sm btn-danger"><i class="fa-solid fa-trash"></i></button>
