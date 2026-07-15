@@ -5,6 +5,8 @@
         <div class="alert alert-success alert-dismissible fade show"><strong>MSJ-26:</strong> Diagnóstico guardado correctamente.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     <?php elseif($_GET['msg'] == 'diagnostico_error'): ?>
         <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-27:</strong> Error al guardar el diagnóstico.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'diagnostico_requerido'): ?>
+        <div class="alert alert-warning alert-dismissible fade show"><strong>RF-04:</strong> El diagnóstico no puede estar vacío. Escriba el diagnóstico antes de guardar.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     <?php endif; ?>
 <?php endif; ?>
 

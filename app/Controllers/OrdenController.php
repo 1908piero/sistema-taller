@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Models\Orden;
 use App\Models\Cliente;
+use App\Models\Vehiculo;
 use App\Models\Producto;
 use Config\Database;
 use Dompdf\Dompdf;
@@ -15,10 +16,13 @@ class OrdenController extends BaseController {
         $ordenes = $ordenModel->getAll();
         $clienteModel = new Cliente();
         $clientes = $clienteModel->getAll();
+        $vehiculoModel = new Vehiculo();
+        $vehiculos = $vehiculoModel->getAll();
 
         $this->view('ordenes/index', [
             'ordenes' => $ordenes,
             'clientes' => $clientes,
+            'vehiculos' => $vehiculos,
             'titulo' => 'Gestión de Órdenes'
         ]);
     }
@@ -58,8 +62,28 @@ class OrdenController extends BaseController {
 
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // RF-03: Validar que cliente exista
+            $clienteModel = new Cliente();
+            $cliente = $clienteModel->getById($_POST['cliente_id']);
+            if (!$cliente) {
+                header('Location: /ordenes?msg=cliente_invalido');
+                exit;
+            }
+
+            // RF-03: Validar vehículo si se proporciona
+            $vehiculoId = $_POST['vehiculo_id'] ?? null;
+            if ($vehiculoId) {
+                $vehiculoModel = new Vehiculo();
+                $vehiculo = $vehiculoModel->getById($vehiculoId);
+                if (!$vehiculo) {
+                    header('Location: /ordenes?msg=vehiculo_invalido');
+                    exit;
+                }
+            }
+
             $data = [
                 'cliente_id' => $_POST['cliente_id'],
+                'vehiculo_id' => $vehiculoId,
                 'equipo_tipo' => $_POST['equipo_tipo'],
                 'equipo_marca' => $_POST['equipo_marca'],
                 'equipo_modelo' => $_POST['equipo_modelo'],
@@ -193,7 +217,13 @@ class OrdenController extends BaseController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $ordenId = $_POST['orden_id'];
             $texto = $_POST['diagnostico'];
-            
+
+            // RF-04: El diagnóstico no puede estar vacío
+            if (empty(trim($texto))) {
+                header("Location: /ordenes/detalle?id=" . $ordenId . "&msg=diagnostico_requerido");
+                exit;
+            }
+
             $ordenModel = new Orden();
             if ($ordenModel->guardarDiagnostico($ordenId, $texto)) {
                 $this->registrarAuditoria('ordenes_servicio', $ordenId, 'guardar_diagnostico', null, substr($texto, 0, 200));

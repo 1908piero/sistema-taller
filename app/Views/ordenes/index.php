@@ -14,6 +14,8 @@
         <?php 
             if($_GET['msg'] == 'guardado') echo "Orden generada exitosamente.";
             elseif($_GET['msg'] == 'estado_actualizado') echo "Estado actualizado.";
+            elseif($_GET['msg'] == 'cliente_invalido') echo "<strong>RF-03:</strong> El cliente seleccionado no existe.";
+            elseif($_GET['msg'] == 'vehiculo_invalido') echo "<strong>RF-03:</strong> El vehículo seleccionado no existe.";
             elseif($_GET['msg'] == 'error') echo "<i class='fa-solid fa-triangle-exclamation'></i> Error al guardar. Verifica que todos los campos requeridos estén llenos.";
             else echo "Acción realizada.";
         ?>
@@ -100,6 +102,15 @@
                                 <?php if($cliente->estado == 1): ?>
                                     <option value="<?php echo $cliente->id; ?>"><?php echo $cliente->nombre . ' - ' . $cliente->telefono; ?></option>
                                 <?php endif; ?>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Vehículo (opcional)</label>
+                        <select class="form-select" name="vehiculo_id">
+                            <option value="">-- Sin vehículo asociado --</option>
+                            <?php foreach($vehiculos as $v): ?>
+                                <option value="<?php echo $v->id; ?>"><?php echo $v->placa . ' - ' . $v->marca . ' ' . $v->modelo; ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
