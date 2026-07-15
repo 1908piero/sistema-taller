@@ -184,14 +184,18 @@ class OrdenController extends BaseController {
             $precio = $producto->precio_venta ?? 0;
 
             $ordenModel = new Orden();
-            $ordenModel->addRepuesto([
+            $resultado = $ordenModel->addRepuesto([
                 'orden_id' => $ordenId,
                 'producto_id' => $productoId,
                 'cantidad' => $cantidad,
                 'precio_unitario' => $precio,
             ]);
-            $this->registrarAuditoria('orden_repuestos', null, 'agregar_repuesto', null, "Orden #$ordenId - Producto #$productoId x$cantidad");
-            header("Location: /ordenes/detalle?id=" . $ordenId);
+            if ($resultado) {
+                $this->registrarAuditoria('orden_repuestos', null, 'agregar_repuesto', null, "Orden #$ordenId - Producto #$productoId x$cantidad");
+                header("Location: /ordenes/detalle?id=" . $ordenId);
+            } else {
+                header("Location: /ordenes/detalle?id=" . $ordenId . "&msg=stock_insuficiente");
+            }
             exit;
         }
     }

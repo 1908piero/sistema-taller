@@ -7,6 +7,8 @@
         <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-27:</strong> Error al guardar el diagnóstico.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     <?php elseif($_GET['msg'] == 'diagnostico_requerido'): ?>
         <div class="alert alert-warning alert-dismissible fade show"><strong>RF-04:</strong> El diagnóstico no puede estar vacío. Escriba el diagnóstico antes de guardar.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'stock_insuficiente'): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-38 (RN-04):</strong> Stock insuficiente. No se puede agregar el repuesto porque no hay existencias disponibles.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     <?php endif; ?>
 <?php endif; ?>
 

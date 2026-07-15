@@ -104,6 +104,16 @@ class Orden extends BaseModel {
         try {
             $this->db->beginTransaction();
 
+            // RF-06 + RN-04: Validar stock antes de insertar
+            $stmtCheck = $this->db->prepare("SELECT stock FROM productos WHERE id = :id");
+            $stmtCheck->execute([':id' => $data['producto_id']]);
+            $prod = $stmtCheck->fetch(PDO::FETCH_OBJ);
+            if (!$prod || $prod->stock < $data['cantidad']) {
+                $this->db->rollBack();
+                return false;
+            }
+            $stockAnterior = $prod->stock;
+
             $stmt = $this->db->prepare("INSERT INTO orden_repuestos (orden_id, producto_id, cantidad, precio_unitario, subtotal) 
                                        VALUES (:orden_id, :producto_id, :cantidad, :precio, :subtotal)");
             $stmt->execute([
@@ -115,20 +125,18 @@ class Orden extends BaseModel {
             ]);
 
             // Descontar stock
-            $stmt2 = $this->db->prepare("UPDATE productos SET stock = stock - :cantidad WHERE id = :id AND stock >= :cantidad");
+            $stmt2 = $this->db->prepare("UPDATE productos SET stock = stock - :cantidad WHERE id = :id");
             $stmt2->execute([':cantidad' => $data['cantidad'], ':id' => $data['producto_id']]);
 
             // Registrar en kardex
-            $stmt3 = $this->db->prepare("SELECT stock FROM productos WHERE id = :id");
-            $stmt3->execute([':id' => $data['producto_id']]);
-            $stockActual = $stmt3->fetch(PDO::FETCH_OBJ)->stock;
+            $stockActual = $stockAnterior - $data['cantidad'];
 
             $stmt4 = $this->db->prepare("INSERT INTO kardex (producto_id, usuario_id, tipo, cantidad, stock_anterior, stock_actual, motivo) 
                                         VALUES (:pid, :uid, 'salida', :cant, :stock_ant, :stock_act, :motivo)");
             $stmt4->execute([
                 ':pid' => $data['producto_id'], ':uid' => $_SESSION['user_id'] ?? 1,
                 ':cant' => $data['cantidad'],
-                ':stock_ant' => $stockActual + $data['cantidad'],
+                ':stock_ant' => $stockAnterior,
                 ':stock_act' => $stockActual,
                 ':motivo' => 'Uso en orden #' . $data['orden_id'],
             ]);
