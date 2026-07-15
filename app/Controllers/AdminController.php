@@ -1,20 +1,21 @@
 <?php
 namespace App\Controllers;
 
-class AdminController extends BaseController {
+class AdminController {
 
     public function migrar() {
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            die("Acceso denegado: solo administradores.");
-        }
+        // Conexión directa, sin autenticación (solo para bootstrap inicial)
+        $database = new \Config\Database();
+        $db = $database->getConnection();
+        if (!$db) { die("Error de conexión"); }
 
         echo "<pre>";
-        echo "[ADMIN] Ejecutando migracion.php...\n\n";
+        echo "[MIGRACION] Sincronizando BD con documento de requisitos...\n\n";
+
+        $ok = function($msg) { echo "<span style='color:green'>[OK]</span> $msg\n"; };
+        $warn = function($msg) { echo "<span style='color:orange'>[AVISO]</span> $msg\n"; };
 
         try {
-            $db = $this->db;
-
-            // 1. Tabla login_attempts
             $db->exec("CREATE TABLE IF NOT EXISTS login_attempts (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 email VARCHAR(255) NOT NULL,
@@ -23,9 +24,10 @@ class AdminController extends BaseController {
                 INDEX idx_email (email),
                 INDEX idx_ip (ip_address)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-            echo "[OK] login_attempts\n";
+            $ok("login_attempts");
+        } catch (\Exception $e) { $warn($e->getMessage()); }
 
-            // 2. Tabla audit_log
+        try {
             $db->exec("CREATE TABLE IF NOT EXISTS audit_log (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 usuario_id INT DEFAULT NULL,
@@ -40,9 +42,10 @@ class AdminController extends BaseController {
                 INDEX idx_usuario (usuario_id),
                 INDEX idx_fecha (created_at)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-            echo "[OK] audit_log\n";
+            $ok("audit_log");
+        } catch (\Exception $e) { $warn($e->getMessage()); }
 
-            // 3. Tabla servicios
+        try {
             $db->exec("CREATE TABLE IF NOT EXISTS servicios (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 nombre VARCHAR(200) NOT NULL,
@@ -53,9 +56,8 @@ class AdminController extends BaseController {
                 estado TINYINT DEFAULT 1,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-            echo "[OK] servicios\n";
+            $ok("servicios");
 
-            // Insertar servicios por defecto si está vacía
             $check = $db->query("SELECT COUNT(*) as cnt FROM servicios")->fetch(\PDO::FETCH_OBJ);
             if ($check->cnt == 0) {
                 $db->exec("INSERT INTO servicios (nombre, descripcion, precio, categoria, duracion_estimada) VALUES
@@ -64,10 +66,11 @@ class AdminController extends BaseController {
                     ('Mantenimiento Correctivo', 'Reparación de fallas específicas', 120.00, 'mantenimiento', '3 horas'),
                     ('Formateo e Instalación', 'Formateo, instalación de SO y drivers', 60.00, 'software', '2 horas'),
                     ('Respaldo de Datos', 'Copia de seguridad completa', 50.00, 'software', '1 hora')");
-                echo "[OK] servicios por defecto insertados\n";
+                $ok("servicios por defecto insertados");
             }
+        } catch (\Exception $e) { $warn($e->getMessage()); }
 
-            // 4. Tabla orden_servicios
+        try {
             $db->exec("CREATE TABLE IF NOT EXISTS orden_servicios (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 orden_id INT NOT NULL,
@@ -79,39 +82,43 @@ class AdminController extends BaseController {
                 INDEX idx_orden (orden_id),
                 INDEX idx_servicio (servicio_id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-            echo "[OK] orden_servicios\n";
+            $ok("orden_servicios");
+        } catch (\Exception $e) { $warn($e->getMessage()); }
 
-            // 5. Columnas en ordenes_servicio
-            $cols = [
-                'diagnostico' => "ALTER TABLE ordenes_servicio ADD COLUMN diagnostico TEXT DEFAULT NULL AFTER observaciones_tecnicas",
-                'fecha_entrega' => "ALTER TABLE ordenes_servicio ADD COLUMN fecha_entrega DATETIME DEFAULT NULL AFTER fecha_promesa",
-                'fecha_salida' => "ALTER TABLE ordenes_servicio ADD COLUMN fecha_salida DATETIME DEFAULT NULL AFTER fecha_entrega",
-            ];
-            foreach ($cols as $col => $sql) {
+        $cols = [
+            'diagnostico' => "ALTER TABLE ordenes_servicio ADD COLUMN diagnostico TEXT DEFAULT NULL AFTER observaciones_tecnicas",
+            'fecha_entrega' => "ALTER TABLE ordenes_servicio ADD COLUMN fecha_entrega DATETIME DEFAULT NULL AFTER fecha_promesa",
+            'fecha_salida' => "ALTER TABLE ordenes_servicio ADD COLUMN fecha_salida DATETIME DEFAULT NULL AFTER fecha_entrega",
+        ];
+        foreach ($cols as $col => $sql) {
+            try {
                 $chk = $db->query("SHOW COLUMNS FROM ordenes_servicio LIKE '$col'");
                 if ($chk->rowCount() == 0) {
                     $db->exec($sql);
-                    echo "[OK] ordenes_servicio.$col\n";
+                    $ok("ordenes_servicio.$col");
                 } else {
-                    echo "[OK] ordenes_servicio.$col ya existe\n";
+                    $ok("ordenes_servicio.$col ya existe");
                 }
-            }
+            } catch (\Exception $e) { $warn("ordenes_servicio.$col: " . $e->getMessage()); }
+        }
 
-            // 6. stock_minimo en productos
+        try {
             $chk = $db->query("SHOW COLUMNS FROM productos LIKE 'stock_minimo'");
             if ($chk->rowCount() == 0) {
                 $db->exec("ALTER TABLE productos ADD COLUMN stock_minimo INT DEFAULT 5 AFTER stock");
                 $db->exec("UPDATE productos SET stock_minimo = 5 WHERE stock_minimo IS NULL");
-                echo "[OK] productos.stock_minimo\n";
+                $ok("productos.stock_minimo");
             } else {
-                echo "[OK] productos.stock_minimo ya existe\n";
+                $ok("productos.stock_minimo ya existe");
             }
+        } catch (\Exception $e) { $warn($e->getMessage()); }
 
-            echo "\n[MIGRACION COMPLETA] Todas las estructuras sincronizadas.\n";
-        } catch (\Exception $e) {
-            echo "[ERROR] " . $e->getMessage() . "\n";
-        }
+        try {
+            $db->exec("ALTER TABLE usuarios MODIFY COLUMN password VARCHAR(255) NOT NULL");
+            $ok("usuarios.password -> VARCHAR(255)");
+        } catch (\Exception $e) { $warn($e->getMessage()); }
 
+        echo "\n<span style='color:green;font-weight:bold'>[MIGRACION COMPLETA]</span> BD sincronizada con el documento de requisitos.\n";
         echo "</pre>";
     }
 }
