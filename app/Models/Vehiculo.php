@@ -51,16 +51,25 @@ class Vehiculo extends BaseModel {
         } catch (\Exception $e) { return null; }
     }
 
-    public function searchByPlaca($placa) {
+    public function searchByPlaca($term) {
         try {
-            $stmt = $this->db->prepare("
-                SELECT v.*, c.nombre as cliente_nombre 
-                FROM vehiculos v 
-                LEFT JOIN clientes c ON v.cliente_id = c.id 
-                WHERE v.placa LIKE :placa 
-                ORDER BY v.id DESC LIMIT 10
-            ");
-            $stmt->execute([':placa' => '%' . $placa . '%']);
+            $sql = "SELECT v.*, c.nombre as cliente_nombre 
+                    FROM vehiculos v 
+                    LEFT JOIN clientes c ON v.cliente_id = c.id 
+                    WHERE ";
+            $params = [];
+            // RF-11: búsqueda por placa o ID
+            if (is_numeric($term)) {
+                $sql .= "v.id = :id OR v.placa LIKE :placa2";
+                $params[':id'] = (int)$term;
+                $params[':placa2'] = '%' . $term . '%';
+            } else {
+                $sql .= "v.placa LIKE :placa";
+                $params[':placa'] = '%' . $term . '%';
+            }
+            $sql .= " ORDER BY v.id DESC LIMIT 10";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
             return $stmt->fetchAll(PDO::FETCH_OBJ);
         } catch (\Exception $e) { return []; }
     }

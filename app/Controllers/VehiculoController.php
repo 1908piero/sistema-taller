@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Models\Vehiculo;
 use App\Models\Cliente;
+use App\Models\Orden;
 
 class VehiculoController extends BaseController {
 
@@ -163,9 +164,14 @@ class VehiculoController extends BaseController {
         if ($search) {
             $vehiculoModel = new Vehiculo();
             $resultados = $vehiculoModel->searchByPlaca($search);
-            // Para cada resultado, cargar ordenes
+            $ordenModel = new Orden();
             foreach ($resultados as &$v) {
                 $v->ordenes = $vehiculoModel->getHistorialOrdenes($v->id);
+                // RF-11: Cargar servicios y repuestos por cada orden
+                foreach ($v->ordenes as &$o) {
+                    $o->servicios = $ordenModel->getServicios($o->id);
+                    $o->repuestos = $ordenModel->getRepuestos($o->id);
+                }
             }
         }
 

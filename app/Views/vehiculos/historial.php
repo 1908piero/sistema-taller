@@ -9,8 +9,9 @@
     <div class="card-body py-3">
         <form action="/vehiculos/historial" method="GET" class="row g-3 align-items-end">
             <div class="col-md-6">
-                <label class="form-label fw-bold small">Buscar por placa:</label>
-                <input type="text" class="form-control" name="search" placeholder="Ingrese placa del vehículo..." value="<?php echo htmlspecialchars($search); ?>">
+                <label class="form-label fw-bold small">Buscar por placa o ID:</label>
+                <input type="text" class="form-control" name="search" placeholder="Ingrese placa o ID del vehículo..." value="<?php echo htmlspecialchars($search); ?>">
+                <div class="form-text text-muted"><small>Puede buscar por placa (ej: ABC-123) o por ID numérico (ej: 5).</small></div>
             </div>
             <div class="col-md-2">
                 <button type="submit" class="btn btn-primary w-100">
@@ -24,7 +25,7 @@
 <?php if ($search): ?>
     <?php if (empty($resultados)): ?>
         <div class="alert alert-warning text-center">
-            <i class="fa-solid fa-exclamation-triangle"></i> No se encontraron vehículos con la placa "<?php echo htmlspecialchars($search); ?>".
+            <i class="fa-solid fa-exclamation-triangle"></i> No se encontraron vehículos con la placa o ID "<?php echo htmlspecialchars($search); ?>".
         </div>
     <?php else: ?>
         <?php foreach ($resultados as $vehiculo): ?>
@@ -39,9 +40,11 @@
                             <table class="table table-sm table-hover">
                                 <thead>
                                     <tr>
+                                        <th style="width:30px"></th>
                                         <th># Orden</th>
                                         <th>Cliente</th>
                                         <th>Falla</th>
+                                        <th>Diagnóstico</th>
                                         <th>Fecha</th>
                                         <th>Estado</th>
                                         <th>Total</th>
@@ -50,10 +53,17 @@
                                 </thead>
                                 <tbody>
                                     <?php foreach ($vehiculo->ordenes as $o): ?>
+                                        <?php $uniqid = uniqid('det_'); ?>
                                         <tr>
+                                            <td>
+                                                <button class="btn btn-sm btn-link p-0 text-decoration-none" type="button" data-bs-toggle="collapse" data-bs-target="#<?php echo $uniqid; ?>" aria-expanded="false">
+                                                    <i class="fa-solid fa-chevron-down"></i>
+                                                </button>
+                                            </td>
                                             <td><strong>ORD-<?php echo str_pad($o->id, 4, '0', STR_PAD_LEFT); ?></strong></td>
                                             <td><?php echo htmlspecialchars($o->cliente_nombre); ?></td>
                                             <td><small><?php echo substr($o->falla_reportada, 0, 40); ?></small></td>
+                                            <td><small><?php echo substr($o->diagnostico ?? $o->observaciones_tecnicas ?? '—', 0, 40); ?></small></td>
                                             <td><?php echo date('d/m/Y', strtotime($o->fecha_recepcion)); ?></td>
                                             <td>
                                                 <?php $badges = ['pendiente'=>'warning','diagnostico'=>'info','reparado'=>'primary','entregado'=>'success','cancelado'=>'danger']; ?>
@@ -61,6 +71,36 @@
                                             </td>
                                             <td>S/ <?php echo number_format($o->total, 2); ?></td>
                                             <td><a href="/ordenes/detalle?id=<?php echo $o->id; ?>" class="btn btn-sm btn-info"><i class="fa-solid fa-eye"></i></a></td>
+                                        </tr>
+                                        <tr class="collapse" id="<?php echo $uniqid; ?>">
+                                            <td colspan="9" class="bg-light p-3">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <strong>Servicios:</strong>
+                                                        <?php if (!empty($o->servicios)): ?>
+                                                            <ul class="list-unstyled small mb-0 mt-1">
+                                                                <?php foreach ($o->servicios as $s): ?>
+                                                                    <li><i class="fa-solid fa-wrench text-info me-1"></i> <?php echo htmlspecialchars($s->servicio_nombre ?? ('Servicio #' . $s->servicio_id)); ?> x<?php echo $s->cantidad; ?> — S/ <?php echo number_format($s->subtotal, 2); ?></li>
+                                                                <?php endforeach; ?>
+                                                            </ul>
+                                                        <?php else: ?>
+                                                            <p class="text-muted small mb-0 mt-1">—</p>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <strong>Repuestos:</strong>
+                                                        <?php if (!empty($o->repuestos)): ?>
+                                                            <ul class="list-unstyled small mb-0 mt-1">
+                                                                <?php foreach ($o->repuestos as $r): ?>
+                                                                    <li><i class="fa-solid fa-boxes text-success me-1"></i> <?php echo htmlspecialchars($r->producto_nombre ?? ('Producto #' . $r->producto_id)); ?> x<?php echo $r->cantidad; ?> — S/ <?php echo number_format($r->subtotal, 2); ?></li>
+                                                                <?php endforeach; ?>
+                                                            </ul>
+                                                        <?php else: ?>
+                                                            <p class="text-muted small mb-0 mt-1">—</p>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                </div>
+                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -77,8 +117,8 @@
     <div class="card shadow-sm">
         <div class="card-body text-center py-5">
             <i class="fa-solid fa-search fa-3x text-muted mb-3"></i>
-            <h5 class="text-muted">Ingrese una placa para consultar el historial completo del vehículo</h5>
-            <p class="text-muted">Podrá ver todas las órdenes de servicio asociadas a ese vehículo.</p>
+            <h5 class="text-muted">Ingrese una placa o ID para consultar el historial completo del vehículo</h5>
+            <p class="text-muted">Podrá ver todas las órdenes de servicio, diagnósticos, servicios y repuestos asociados.</p>
         </div>
     </div>
 <?php endif; ?>

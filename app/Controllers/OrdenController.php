@@ -130,6 +130,20 @@ class OrdenController extends BaseController {
                 exit;
             }
 
+            // RF-05: Validar que exista al menos un servicio registrado antes de reparado/entregado
+            if (in_array($estado, ['reparado', 'entregado'])) {
+                $servicios = $ordenModel->getServicios($id);
+                if (empty($servicios)) {
+                    echo "<div style='padding:20px; font-family:sans-serif; text-align:center;'>";
+                    echo "<h2 style='color:red;'>MSJ-37: Servicios requeridos (RF-05)</h2>";
+                    echo "<p><strong>RF-05:</strong> Debe registrar al menos un servicio en la orden antes de cambiarla a 'Reparado' o 'Entregado'.</p>";
+                    echo "<p>Agregue servicios en la sección 'Servicios' del detalle de la orden.</p>";
+                    echo "<br><a href='/ordenes/detalle?id=$id' class='btn btn-primary'>Ir al detalle</a>";
+                    echo "</div>";
+                    exit;
+                }
+            }
+
             // RN-05: Si se entrega, registrar fecha_entrega
             $datosNuevos = ['estado' => $estado];
             if ($estado === 'entregado') {
@@ -257,9 +271,10 @@ class OrdenController extends BaseController {
                         ':cant' => $cantidad, ':precio' => $servicio->precio,
                         ':subtotal' => $subtotal, ':tecnico' => $tecnico
                     ]);
-                    $ordenModel = new Orden();
-                    $ordenModel->recalcularTotal($ordenId);
-                    $this->registrarAuditoria('orden_servicios', null, 'agregar_servicio', null, "Orden #$ordenId - Servicio #$servicioId x$cantidad");
+                $ordenModel = new Orden();
+                $ordenModel->recalcularTotal($ordenId);
+                $ordenModel->registrarHistorial($ordenId, 'Servicio agregado', $servicio->nombre . ' x' . $cantidad);
+                $this->registrarAuditoria('orden_servicios', null, 'agregar_servicio', null, "Orden #$ordenId - Servicio #$servicioId x$cantidad");
                 }
             } catch (\Exception $e) {}
 
@@ -275,10 +290,15 @@ class OrdenController extends BaseController {
             $ordenId = $_POST['orden_id'];
 
             try {
-                $stmt = $this->db->prepare("DELETE FROM orden_servicios WHERE id = :id");
+                $stmt = $this->db->prepare("SELECT os.*, s.nombre as servicio_nombre FROM orden_servicios os LEFT JOIN servicios s ON os.servicio_id = s.id WHERE os.id = :id");
                 $stmt->execute([':id' => $idDetalle]);
+                $detalleServ = $stmt->fetch(\PDO::FETCH_OBJ);
+                $stmtDel = $this->db->prepare("DELETE FROM orden_servicios WHERE id = :id");
+                $stmtDel->execute([':id' => $idDetalle]);
                 $ordenModel = new Orden();
                 $ordenModel->recalcularTotal($ordenId);
+                $nombreServ = $detalleServ ? ($detalleServ->servicio_nombre ?? 'Servicio #' . $detalleServ->servicio_id) : 'Servicio';
+                $ordenModel->registrarHistorial($ordenId, 'Servicio eliminado', $nombreServ);
                 $this->registrarAuditoria('orden_servicios', $idDetalle, 'eliminar_servicio', null, "Orden #$ordenId");
             } catch (\Exception $e) {}
 

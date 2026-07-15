@@ -250,7 +250,7 @@ class Orden extends BaseModel {
         } catch (\Exception $e) {}
     }
 
-    private function registrarHistorial($ordenId, $accion, $detalle = null) {
+    public function registrarHistorial($ordenId, $accion, $detalle = null) {
         try {
             $stmt = $this->db->prepare("INSERT INTO historial_ordenes (orden_id, usuario_id, accion, detalle) VALUES (:oid, :uid, :acc, :det)");
             $stmt->execute([
