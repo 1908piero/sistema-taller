@@ -76,22 +76,30 @@ class AuthController extends BaseController {
     }
 
     private function estaBloqueado($email, $ip) {
-        $desde = date('Y-m-d H:i:s', strtotime("-{$this->tiempoBloqueo} minutes"));
-        $stmt = $this->db->prepare("SELECT COUNT(*) as total FROM login_attempts 
-                                     WHERE (email = :email OR ip_address = :ip) 
-                                     AND attempted_at >= :desde");
-        $stmt->execute([':email' => $email, ':ip' => $ip, ':desde' => $desde]);
-        $total = $stmt->fetch(\PDO::FETCH_OBJ)->total;
-        return $total >= $this->maxIntentos;
+        try {
+            $desde = date('Y-m-d H:i:s', strtotime("-{$this->tiempoBloqueo} minutes"));
+            $stmt = $this->db->prepare("SELECT COUNT(*) as total FROM login_attempts 
+                                         WHERE (email = :email OR ip_address = :ip) 
+                                         AND attempted_at >= :desde");
+            $stmt->execute([':email' => $email, ':ip' => $ip, ':desde' => $desde]);
+            $total = $stmt->fetch(\PDO::FETCH_OBJ)->total;
+            return $total >= $this->maxIntentos;
+        } catch (\Exception $e) {
+            return false; // Si la tabla no existe, no bloquear
+        }
     }
 
     private function registrarIntento($email, $ip) {
-        $stmt = $this->db->prepare("INSERT INTO login_attempts (email, ip_address) VALUES (:email, :ip)");
-        $stmt->execute([':email' => $email, ':ip' => $ip]);
+        try {
+            $stmt = $this->db->prepare("INSERT INTO login_attempts (email, ip_address) VALUES (:email, :ip)");
+            $stmt->execute([':email' => $email, ':ip' => $ip]);
+        } catch (\Exception $e) {}
     }
 
     private function limpiarIntentos($email) {
-        $stmt = $this->db->prepare("DELETE FROM login_attempts WHERE email = :email");
-        $stmt->execute([':email' => $email]);
+        try {
+            $stmt = $this->db->prepare("DELETE FROM login_attempts WHERE email = :email");
+            $stmt->execute([':email' => $email]);
+        } catch (\Exception $e) {}
     }
 }
