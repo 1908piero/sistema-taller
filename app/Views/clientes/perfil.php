@@ -8,6 +8,7 @@
         <div>
             <h2 class="mb-0"><?php echo $cliente->nombre; ?></h2>
             <div class="text-muted small">
+                <i class="fa-solid fa-id-card me-1"></i> <?php echo $cliente->dni ?: 'Sin DNI'; ?> | 
                 <i class="fa-solid fa-envelope me-1"></i> <?php echo $cliente->email ?: 'Sin email'; ?> | 
                 <i class="fa-solid fa-phone me-1"></i> <?php echo $cliente->telefono ?: 'Sin teléfono'; ?>
             </div>
