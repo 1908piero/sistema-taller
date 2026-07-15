@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 $db = (new Config\Database())->getConnection();
 if (!$db) { die("Error BD"); }
 
