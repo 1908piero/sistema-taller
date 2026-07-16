@@ -3,7 +3,7 @@ FROM php:8.2-apache
 RUN a2enmod rewrite
 
 RUN apt-get update && apt-get install -y \
-    git unzip libicu-dev libpng-dev libjpeg-dev libfreetype6-dev libzip-dev && \
+    git unzip libicu-dev libpng-dev libjpeg-dev libfreetype6-dev libzip-dev libxml2-dev && \
     docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-install intl gd zip xml mbstring pdo pdo_mysql && \
     apt-get clean
