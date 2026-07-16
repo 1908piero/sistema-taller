@@ -5,7 +5,7 @@ WORKDIR /var/www/html
 
 # 2. Dependencias del sistema + extensiones PHP
 RUN apt-get update && apt-get install -y \
-    git unzip libicu-dev libpng-dev libjpeg-dev libfreetype6-dev libzip-dev libxml2-dev && \
+    git unzip libicu-dev libpng-dev libjpeg-dev libfreetype6-dev libzip-dev libxml2-dev libonig-dev && \
     docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-install intl gd zip xml mbstring pdo pdo_mysql && \
     apt-get clean
