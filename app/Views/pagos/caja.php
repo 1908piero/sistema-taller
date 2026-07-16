@@ -8,9 +8,11 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     <?php elseif ($_GET['msg'] == 'orden_invalida'): ?>
-        <div class="alert alert-danger alert-dismissible fade show"><strong>RF-08:</strong> La orden de trabajo seleccionada no existe. Seleccione una orden válida.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-14:</strong> La orden de trabajo no existe.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     <?php elseif ($_GET['msg'] == 'monto_invalido'): ?>
         <div class="alert alert-danger alert-dismissible fade show"><strong>RF-08:</strong> El monto debe ser mayor a 0. Ingrese un monto válido.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif ($_GET['msg'] == 'error_comprobante'): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-15:</strong> Error al generar el comprobante de pago.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     <?php elseif ($_GET['msg'] == 'error'): ?>
         <div class="alert alert-danger alert-dismissible fade show"><strong>Error:</strong> No se pudo registrar el pago. Verifique los datos.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     <?php endif; ?>

@@ -1,10 +1,14 @@
 <?php require_once __DIR__ . '/../partials/header.php'; ?>
 
 <?php if (isset($_GET['msg'])): ?>
-    <?php if ($_GET['msg'] == 'orden_invalida'): ?>
-        <div class="alert alert-danger alert-dismissible fade show"><strong>RF-08:</strong> La orden de trabajo seleccionada no existe.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php if ($_GET['msg'] == 'ok'): ?>
+        <div class="alert alert-success alert-dismissible fade show"><strong>MSJ-13:</strong> Pago registrado correctamente.<a href="/pagos/comprobante?id=<?php echo $_GET['pago_id'] ?? 0; ?>" class="btn btn-sm btn-outline-primary ms-3" target="_blank"><i class="fa-solid fa-print"></i> Imprimir Comprobante</a><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif ($_GET['msg'] == 'orden_invalida'): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-14:</strong> La orden de trabajo no existe.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     <?php elseif ($_GET['msg'] == 'monto_invalido'): ?>
         <div class="alert alert-danger alert-dismissible fade show"><strong>RF-08:</strong> El monto debe ser mayor a 0.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif ($_GET['msg'] == 'error_comprobante'): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-15:</strong> Error al generar el comprobante de pago.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     <?php elseif ($_GET['msg'] == 'error'): ?>
         <div class="alert alert-danger alert-dismissible fade show"><strong>Error:</strong> No se pudo registrar el pago.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     <?php endif; ?>

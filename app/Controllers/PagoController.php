@@ -53,11 +53,19 @@ class PagoController extends BaseController {
                 exit;
             }
 
+            // CU-04: Validar método de pago (whitelist)
+            $metodosPermitidos = ['efectivo', 'tarjeta', 'transferencia', 'yape', 'plin'];
+            $metodoPago = strtolower(trim($_POST['metodo_pago'] ?? ''));
+            if (!in_array($metodoPago, $metodosPermitidos)) {
+                header("Location: $ref?msg=error");
+                exit;
+            }
+
             $data = [
                 'orden_id' => $_POST['orden_id'],
                 'cliente_id' => $_POST['cliente_id'],
                 'monto' => $monto,
-                'metodo_pago' => $_POST['metodo_pago'],
+                'metodo_pago' => $metodoPago,
                 'referencia' => $_POST['referencia'] ?? null,
                 'usuario_id' => $_SESSION['user_id'] ?? 1,
             ];
@@ -91,27 +99,32 @@ class PagoController extends BaseController {
 
     // RF-09: Generar comprobante de pago en PDF
     public function comprobante() {
-        $id = $_GET['id'] ?? null;
-        if (!$id) { die("ID de pago requerido"); }
+        try {
+            $id = $_GET['id'] ?? null;
+            if (!$id) { die("ID de pago requerido"); }
 
-        $pagoModel = new Pago();
-        $pago = $pagoModel->getById($id);
-        if (!$pago) { die("Pago no encontrado"); }
+            $pagoModel = new Pago();
+            $pago = $pagoModel->getById($id);
+            if (!$pago) { die("Pago no encontrado"); }
 
-        $sistema = $this->config;
+            $sistema = $this->config;
 
-        ob_start();
-        require __DIR__ . '/../Views/pagos/comprobante.php';
-        $html = ob_get_clean();
+            ob_start();
+            require __DIR__ . '/../Views/pagos/comprobante.php';
+            $html = ob_get_clean();
 
-        $options = new Options();
-        $options->set('isRemoteEnabled', true);
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper([0, 0, 226.77, 600], 'portrait');
-        $dompdf->render();
-        $dompdf->stream("COMPROBANTE_{$id}.pdf", ["Attachment" => false]);
-        exit;
+            $options = new Options();
+            $options->set('isRemoteEnabled', true);
+            $dompdf = new Dompdf($options);
+            $dompdf->loadHtml($html);
+            $dompdf->setPaper([0, 0, 226.77, 600], 'portrait');
+            $dompdf->render();
+            $dompdf->stream("COMPROBANTE_{$id}.pdf", ["Attachment" => false]);
+            exit;
+        } catch (\Exception $e) {
+            header('Location: /pagos?msg=error_comprobante');
+            exit;
+        }
     }
 
     public function caja() {

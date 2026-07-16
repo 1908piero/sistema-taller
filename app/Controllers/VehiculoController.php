@@ -184,27 +184,32 @@ class VehiculoController extends BaseController {
 
     // RF-11: Historial de servicios por vehículo
     public function historial() {
-        $search = $_GET['search'] ?? '';
-        $resultados = [];
+        try {
+            $search = $_GET['search'] ?? '';
+            $resultados = [];
 
-        if ($search) {
-            $vehiculoModel = new Vehiculo();
-            $resultados = $vehiculoModel->searchByPlaca($search);
-            $ordenModel = new Orden();
-            foreach ($resultados as &$v) {
-                $v->ordenes = $vehiculoModel->getHistorialOrdenes($v->id);
-                // RF-11: Cargar servicios y repuestos por cada orden
-                foreach ($v->ordenes as &$o) {
-                    $o->servicios = $ordenModel->getServicios($o->id);
-                    $o->repuestos = $ordenModel->getRepuestos($o->id);
+            if ($search) {
+                $vehiculoModel = new Vehiculo();
+                $resultados = $vehiculoModel->searchByPlaca($search);
+                $ordenModel = new Orden();
+                foreach ($resultados as &$v) {
+                    $v->ordenes = $vehiculoModel->getHistorialOrdenes($v->id);
+                    // RF-11: Cargar servicios y repuestos por cada orden
+                    foreach ($v->ordenes as &$o) {
+                        $o->servicios = $ordenModel->getServicios($o->id);
+                        $o->repuestos = $ordenModel->getRepuestos($o->id);
+                    }
                 }
             }
-        }
 
-        $this->view('vehiculos/historial', [
-            'titulo' => 'Historial de Vehículos',
-            'search' => $search,
-            'resultados' => $resultados
-        ]);
+            $this->view('vehiculos/historial', [
+                'titulo' => 'Historial de Vehículos',
+                'search' => $search,
+                'resultados' => $resultados
+            ]);
+        } catch (\Exception $e) {
+            header('Location: /vehiculos/historial?msg=error');
+            exit;
+        }
     }
 }

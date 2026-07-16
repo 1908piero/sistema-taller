@@ -1,5 +1,11 @@
 <?php require_once __DIR__ . '/../partials/header.php'; ?>
 
+<?php if (isset($error)): ?>
+    <div class="alert alert-danger alert-dismissible fade show"><?php echo $error; ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+<?php elseif (isset($hayDatos) && $hayDatos): ?>
+    <div class="alert alert-success alert-dismissible fade show"><strong>MSJ-19:</strong> Reporte generado correctamente.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+<?php endif; ?>
+
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Reportes Gerenciales</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
@@ -39,9 +45,10 @@
 <ul class="nav nav-pills mb-3" id="reporteTabs">
     <li class="nav-item"><a class="nav-link active" href="#" data-target="todo">Todo</a></li>
     <li class="nav-item"><a class="nav-link" href="#" data-target="resumen">Resumen</a></li>
-    <li class="nav-item"><a class="nav-link" href="#" data-target="ventas">Ventas</a></li>
-    <li class="nav-item"><a class="nav-link" href="#" data-target="ordenes">Órdenes</a></li>
+    <li class="nav-item"><a class="nav-link" href="#" data-target="clientes">Clientes</a></li>
+    <li class="nav-item"><a class="nav-link" href="#" data-target="pagos">Pagos</a></li>
     <li class="nav-item"><a class="nav-link" href="#" data-target="inventario">Inventario</a></li>
+    <li class="nav-item"><a class="nav-link" href="#" data-target="servicios">Servicios</a></li>
 </ul>
 
 <div class="reporte-section resumen">
@@ -115,64 +122,29 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-4 mb-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-white fw-bold">Estado de Órdenes (Global)</div>
-            <div class="card-body">
-                <div style="position: relative; height: 250px; width: 100%;">
-                    <canvas id="chartEstados"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-8 mb-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-white fw-bold">Top 5 Productos Más Vendidos</div>
-            <div class="card-body">
-                <div style="position: relative; height: 250px; width: 100%;">
-                    <canvas id="chartProductos"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-12 mb-4">
-        <div class="card shadow-sm">
-            <div class="card-header bg-white fw-bold">Tendencia Financiera (Últimos 6 Meses)</div>
-            <div class="card-body">
-                <div style="position: relative; height: 300px; width: 100%;">
-                    <canvas id="chartHistorial"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<?php if (isset($hayDatos) && !$hayDatos): ?>
+    <div class="alert alert-info"><strong>MSJ-20:</strong> No existen datos para el rango seleccionado.</div>
+<?php endif; ?>
 
 <!-- RF-10: Tablas detalladas -->
-<div class="reporte-section ventas">
+<div class="reporte-section clientes">
     <div class="row mt-4">
         <div class="col-12 mb-4">
             <div class="card shadow-sm">
-                <div class="card-header bg-white fw-bold d-flex justify-content-between">
-                    <span><i class="fa-solid fa-receipt me-2"></i> Detalle de Ventas</span>
-                </div>
+                <div class="card-header bg-white fw-bold"><i class="fa-solid fa-users me-2"></i> Clientes con Servicios</div>
                 <div class="card-body p-0">
                     <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                        <table class="table table-sm table-hover mb-0" id="tablaReporteVentas">
+                        <table class="table table-sm table-hover mb-0">
                             <thead class="table-light sticky-top">
-                                <tr><th>#</th><th>Cliente</th><th>Fecha</th><th class="text-end">Total</th></tr>
+                                <tr><th>#</th><th>Cliente</th><th>Total</th></tr>
                             </thead>
                             <tbody>
-                                <?php if(!empty($reporteCompleto['ventas'])): ?>
-                                    <?php foreach($reporteCompleto['ventas'] as $v): ?>
-                                    <tr><td><?php echo $v->id; ?></td><td><?php echo htmlspecialchars($v->cliente_nombre ?? 'General'); ?></td><td><?php echo date('d/m/Y H:i', strtotime($v->fecha)); ?></td><td class="text-end"><?php echo $sistema->simbolo_moneda . ' ' . number_format($v->total, 2); ?></td></tr>
+                                <?php if(!empty($reporteCompleto['ordenes'])): ?>
+                                    <?php foreach($reporteCompleto['ordenes'] as $o): ?>
+                                    <tr><td>ORD-<?php echo str_pad($o->id, 4, '0', STR_PAD_LEFT); ?></td><td><?php echo htmlspecialchars($o->cliente_nombre); ?></td><td class="text-end"><?php echo $sistema->simbolo_moneda . ' ' . number_format($o->total, 2); ?></td></tr>
                                     <?php endforeach; ?>
                                 <?php else: ?>
-                                    <tr><td colspan="4" class="text-center text-muted">Sin ventas en el período.</td></tr>
+                                    <tr><td colspan="3" class="text-center text-muted"><strong>MSJ-20:</strong> No existen datos para el rango seleccionado.</td></tr>
                                 <?php endif; ?>
                             </tbody>
                         </table>
@@ -183,24 +155,24 @@
     </div>
 </div>
 
-<div class="reporte-section ordenes">
-    <div class="row">
-        <div class="col-md-6 mb-4">
+<div class="reporte-section pagos">
+    <div class="row mt-4">
+        <div class="col-12 mb-4">
             <div class="card shadow-sm">
-                <div class="card-header bg-white fw-bold"><i class="fa-solid fa-toolbox me-2"></i> Órdenes Entregadas</div>
+                <div class="card-header bg-white fw-bold"><i class="fa-solid fa-cash-register me-2"></i> Pagos Registrados</div>
                 <div class="card-body p-0">
-                    <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
-                        <table class="table table-sm table-hover mb-0" id="tablaReporteOrdenes">
+                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                        <table class="table table-sm table-hover mb-0">
                             <thead class="table-light sticky-top">
-                                <tr><th>#</th><th>Cliente</th><th>Total</th></tr>
+                                <tr><th>#</th><th>Orden</th><th>Monto</th><th>Método</th></tr>
                             </thead>
                             <tbody>
-                                <?php if(!empty($reporteCompleto['ordenes'])): ?>
-                                    <?php foreach($reporteCompleto['ordenes'] as $o): ?>
-                                    <tr><td>ORD-<?php echo str_pad($o->id, 4, '0', STR_PAD_LEFT); ?></td><td><?php echo htmlspecialchars($o->cliente_nombre); ?></td><td class="text-end"><?php echo $sistema->simbolo_moneda . ' ' . number_format($o->total, 2); ?></td></tr>
+                                <?php if(!empty($reporteCompleto['ventas'])): ?>
+                                    <?php foreach($reporteCompleto['ventas'] as $v): ?>
+                                    <tr><td><?php echo $v->id; ?></td><td><?php echo htmlspecialchars($v->cliente_nombre ?? 'General'); ?></td><td class="text-end"><?php echo $sistema->simbolo_moneda . ' ' . number_format($v->total, 2); ?></td><td>Venta</td></tr>
                                     <?php endforeach; ?>
                                 <?php else: ?>
-                                    <tr><td colspan="3" class="text-center text-muted">Sin entregas en el período.</td></tr>
+                                    <tr><td colspan="4" class="text-center text-muted"><strong>MSJ-20:</strong> No existen datos para el rango seleccionado.</td></tr>
                                 <?php endif; ?>
                             </tbody>
                         </table>
@@ -229,6 +201,36 @@
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <tr><td colspan="3" class="text-center text-success">Todo en niveles óptimos.</td></tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="reporte-section servicios">
+    <div class="row mt-4">
+        <div class="col-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white fw-bold d-flex justify-content-between">
+                    <span><i class="fa-solid fa-receipt me-2"></i> Detalle de Servicios</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr><th>#</th><th>Cliente</th><th>Fecha</th><th class="text-end">Total</th></tr>
+                            </thead>
+                            <tbody>
+                                <?php if(!empty($reporteCompleto['ordenes'])): ?>
+                                    <?php foreach($reporteCompleto['ordenes'] as $o): ?>
+                                    <tr><td>ORD-<?php echo str_pad($o->id, 4, '0', STR_PAD_LEFT); ?></td><td><?php echo htmlspecialchars($o->cliente_nombre); ?></td><td><?php echo date('d/m/Y', strtotime($o->fecha_entrega ?? $o->fecha_recepcion)); ?></td><td class="text-end"><?php echo $sistema->simbolo_moneda . ' ' . number_format($o->total, 2); ?></td></tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr><td colspan="4" class="text-center text-muted"><strong>MSJ-20:</strong> No existen datos para el rango seleccionado.</td></tr>
                                 <?php endif; ?>
                             </tbody>
                         </table>

@@ -7,58 +7,77 @@ use Dompdf\Options;
 
 class ReporteController extends BaseController {
 
+    private function verificarAdmin() {
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+            header('Location: /dashboard');
+            exit;
+        }
+    }
+
     public function index() {
-        $reporteModel = new Reporte();
+        $this->verificarAdmin();
+        try {
+            $reporteModel = new Reporte();
 
-        $fechaInicio = $_GET['desde'] ?? date('Y-m-01');
-        $fechaFin = $_GET['hasta'] ?? date('Y-m-d');
+            $fechaInicio = $_GET['desde'] ?? date('Y-m-01');
+            $fechaFin = $_GET['hasta'] ?? date('Y-m-d');
 
-        $balance = $reporteModel->getBalance($fechaInicio, $fechaFin);
-        $estadosOrdenes = $reporteModel->getOrdenesPorEstado();
-        $topProductos = $reporteModel->getProductosTop();
-        $historial = $reporteModel->getHistorialFinanciero();
+            $balance = $reporteModel->getBalance($fechaInicio, $fechaFin);
+            $estadosOrdenes = $reporteModel->getOrdenesPorEstado();
+            $topProductos = $reporteModel->getProductosTop();
+            $historial = $reporteModel->getHistorialFinanciero();
 
-        $labelsEstado = []; $dataEstado = []; $coloresEstado = [];
-        foreach($estadosOrdenes as $estado) {
-            $labelsEstado[] = ucfirst($estado->estado);
-            $dataEstado[] = $estado->cantidad;
-            if($estado->estado == 'Abierta') $coloresEstado[] = '#ffc107';
-            elseif($estado->estado == 'En proceso') $coloresEstado[] = '#0dcaf0';
-            elseif($estado->estado == 'Cerrada') $coloresEstado[] = '#0d6efd';
-            elseif($estado->estado == 'Entregada') $coloresEstado[] = '#198754';
-            else $coloresEstado[] = '#dc3545';
+            $labelsEstado = []; $dataEstado = []; $coloresEstado = [];
+            foreach($estadosOrdenes as $estado) {
+                $labelsEstado[] = ucfirst($estado->estado);
+                $dataEstado[] = $estado->cantidad;
+                if($estado->estado == 'Abierta') $coloresEstado[] = '#ffc107';
+                elseif($estado->estado == 'En proceso') $coloresEstado[] = '#0dcaf0';
+                elseif($estado->estado == 'Cerrada') $coloresEstado[] = '#0d6efd';
+                elseif($estado->estado == 'Entregada') $coloresEstado[] = '#198754';
+                else $coloresEstado[] = '#dc3545';
+            }
+
+            $labelsProd = []; $dataProd = [];
+            foreach($topProductos as $p) {
+                $labelsProd[] = substr($p->nombre, 0, 15);
+                $dataProd[] = $p->total_vendido;
+            }
+
+            $labelsMes = []; $dataIngreso = []; $dataGasto = [];
+            foreach($historial as $h) {
+                $labelsMes[] = $h['mes'];
+                $dataIngreso[] = $h['ingreso'];
+                $dataGasto[] = $h['gasto'];
+            }
+
+            // RF-10: Reporte detallado por módulo
+            $reporteCompleto = $reporteModel->getReporteCompleto($fechaInicio, $fechaFin);
+
+            $hayDatos = !empty($reporteCompleto['ventas']) || !empty($reporteCompleto['ordenes']);
+
+            $this->view('reportes/index', [
+                'titulo' => 'Reportes Gerenciales',
+                'balance' => $balance,
+                'fechaInicio' => $fechaInicio,
+                'fechaFin' => $fechaFin,
+                'chartEstados' => json_encode(['labels' => $labelsEstado, 'data' => $dataEstado, 'colors' => $coloresEstado]),
+                'chartProductos' => json_encode(['labels' => $labelsProd, 'data' => $dataProd]),
+                'chartHistorial' => json_encode(['labels' => $labelsMes, 'ingreso' => $dataIngreso, 'gasto' => $dataGasto]),
+                'reporteCompleto' => $reporteCompleto,
+                'hayDatos' => $hayDatos
+            ]);
+        } catch (\Exception $e) {
+            $this->view('reportes/index', [
+                'titulo' => 'Reportes Gerenciales',
+                'error' => 'MSJ-21: Error al generar el reporte.'
+            ]);
         }
-
-        $labelsProd = []; $dataProd = [];
-        foreach($topProductos as $p) {
-            $labelsProd[] = substr($p->nombre, 0, 15);
-            $dataProd[] = $p->total_vendido;
-        }
-
-        $labelsMes = []; $dataIngreso = []; $dataGasto = [];
-        foreach($historial as $h) {
-            $labelsMes[] = $h['mes'];
-            $dataIngreso[] = $h['ingreso'];
-            $dataGasto[] = $h['gasto'];
-        }
-
-        // RF-10: Reporte detallado por módulo
-        $reporteCompleto = $reporteModel->getReporteCompleto($fechaInicio, $fechaFin);
-
-        $this->view('reportes/index', [
-            'titulo' => 'Reportes Gerenciales',
-            'balance' => $balance,
-            'fechaInicio' => $fechaInicio,
-            'fechaFin' => $fechaFin,
-            'chartEstados' => json_encode(['labels' => $labelsEstado, 'data' => $dataEstado, 'colors' => $coloresEstado]),
-            'chartProductos' => json_encode(['labels' => $labelsProd, 'data' => $dataProd]),
-            'chartHistorial' => json_encode(['labels' => $labelsMes, 'ingreso' => $dataIngreso, 'gasto' => $dataGasto]),
-            'reporteCompleto' => $reporteCompleto
-        ]);
     }
 
     // RF-10: Exportar reporte a Excel (CSV)
     public function exportarExcel() {
+        $this->verificarAdmin();
         $reporteModel = new Reporte();
         $fechaInicio = $_GET['desde'] ?? date('Y-m-01');
         $fechaFin = $_GET['hasta'] ?? date('Y-m-d');
@@ -98,6 +117,7 @@ class ReporteController extends BaseController {
 
     // RF-10: Exportar reporte a PDF
     public function exportarPdf() {
+        $this->verificarAdmin();
         $reporteModel = new Reporte();
         $fechaInicio = $_GET['desde'] ?? date('Y-m-01');
         $fechaFin = $_GET['hasta'] ?? date('Y-m-d');

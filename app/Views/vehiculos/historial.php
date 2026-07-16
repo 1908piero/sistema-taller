@@ -22,12 +22,17 @@
     </div>
 </div>
 
+<?php if (isset($_GET['msg']) && $_GET['msg'] == 'error'): ?>
+    <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-18:</strong> Error al consultar la información.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+<?php endif; ?>
+
 <?php if ($search): ?>
     <?php if (empty($resultados)): ?>
         <div class="alert alert-warning text-center">
-            <i class="fa-solid fa-exclamation-triangle"></i> No se encontraron vehículos con la placa o ID "<?php echo htmlspecialchars($search); ?>".
+            <i class="fa-solid fa-exclamation-triangle"></i> <strong>MSJ-17:</strong> El vehículo no existe en el sistema.
         </div>
     <?php else: ?>
+        <div class="alert alert-success alert-dismissible fade show"><strong>MSJ-16:</strong> Consulta realizada exitosamente.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
         <?php foreach ($resultados as $vehiculo): ?>
             <div class="card shadow-sm mb-3">
                 <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
