@@ -21,7 +21,7 @@ class Reporte extends BaseModel {
         // Por ahora usaremos fecha_recepcion para simplificar, o idealmente deberíamos tener fecha_entrega.
         // Asumiremos que cuenta cuando se recibe el dinero (aprox fecha recepcion en este modelo simple).
         $sqlServicios = "SELECT SUM(total) as total FROM ordenes_servicio 
-                         WHERE estado = 'entregado' 
+                         WHERE estado = 'Entregada' 
                          AND fecha_recepcion BETWEEN :inicio AND :fin";
         $stmt = $this->db->prepare($sqlServicios);
         $stmt->execute([':inicio' => "$fechaInicio 00:00:00", ':fin' => "$fechaFin 23:59:59"]);
@@ -79,7 +79,7 @@ class Reporte extends BaseModel {
         // Órdenes entregadas del período
         $sqlO = "SELECT o.*, c.nombre as cliente_nombre FROM ordenes_servicio o 
                  LEFT JOIN clientes c ON o.cliente_id = c.id 
-                 WHERE o.estado = 'entregado' AND o.fecha_entrega BETWEEN :inicio AND :fin ORDER BY o.fecha_entrega DESC";
+                 WHERE o.estado = 'Entregada' AND o.fecha_entrega BETWEEN :inicio AND :fin ORDER BY o.fecha_entrega DESC";
         $stmt = $this->db->prepare($sqlO);
         $stmt->execute([':inicio' => "$fechaInicio 00:00:00", ':fin' => "$fechaFin 23:59:59"]);
         $reporte['ordenes'] = $stmt->fetchAll(\PDO::FETCH_OBJ);
@@ -111,7 +111,7 @@ class Reporte extends BaseModel {
             // Nota: SQL complejo simplificado en lógica PHP para compatibilidad
             $sqlIng = "SELECT 
                 (SELECT COALESCE(SUM(total),0) FROM ventas WHERE DATE_FORMAT(fecha, '%Y-%m') = :mes) +
-                (SELECT COALESCE(SUM(total),0) FROM ordenes_servicio WHERE estado='entregado' AND DATE_FORMAT(fecha_recepcion, '%Y-%m') = :mes) 
+                (SELECT COALESCE(SUM(total),0) FROM ordenes_servicio WHERE estado='Entregada' AND DATE_FORMAT(fecha_recepcion, '%Y-%m') = :mes) 
                 as total_ingreso";
             
             $stmt = $this->db->prepare($sqlIng);

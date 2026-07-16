@@ -46,7 +46,7 @@ class Cliente extends BaseModel {
     public function getEstadisticas($clienteId) {
         try {
             // 1. Total gastado en Servicios (Órdenes no canceladas)
-            $stmt = $this->db->prepare("SELECT SUM(total) as total FROM ordenes_servicio WHERE cliente_id = :id AND estado != 'cancelado'");
+            $stmt = $this->db->prepare("SELECT SUM(total) as total FROM ordenes_servicio WHERE cliente_id = :id AND estado != 'Cancelada'");
             $stmt->execute([':id' => $clienteId]);
             $totalServicios = $stmt->fetch(PDO::FETCH_OBJ)->total ?? 0;
 

@@ -66,7 +66,7 @@
                                             <td><small><?php echo substr($o->diagnostico ?? $o->observaciones_tecnicas ?? '—', 0, 40); ?></small></td>
                                             <td><?php echo date('d/m/Y', strtotime($o->fecha_recepcion)); ?></td>
                                             <td>
-                                                <?php $badges = ['pendiente'=>'warning','diagnostico'=>'info','reparado'=>'primary','entregado'=>'success','cancelado'=>'danger']; ?>
+                                                <?php $badges = ['Abierta'=>'warning','En proceso'=>'info','Cerrada'=>'primary','Entregada'=>'success','Cancelada'=>'danger']; ?>
                                                 <span class="badge bg-<?php echo $badges[$o->estado] ?? 'secondary'; ?>"><?php echo ucfirst($o->estado); ?></span>
                                             </td>
                                             <td>S/ <?php echo number_format($o->total, 2); ?></td>

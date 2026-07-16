@@ -8,7 +8,9 @@
     <?php elseif($_GET['msg'] == 'diagnostico_requerido'): ?>
         <div class="alert alert-warning alert-dismissible fade show"><strong>RF-04:</strong> El diagnóstico no puede estar vacío. Escriba el diagnóstico antes de guardar.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     <?php elseif($_GET['msg'] == 'stock_insuficiente'): ?>
-        <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-38 (RN-04):</strong> Stock insuficiente. No se puede agregar el repuesto porque no hay existencias disponibles.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-10 (RN-04):</strong> No hay stock disponible del repuesto.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'error_inventario'): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-12:</strong> No se pudo actualizar el inventario.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     <?php endif; ?>
 <?php endif; ?>
 
@@ -20,7 +22,7 @@
     <div>
         <?php if(!empty($orden->cliente_telefono)): ?>
             <?php 
-                $mensaje = "Hola " . $orden->cliente_nombre . ", te escribimos de " . $sistema->nombre_sistema . ". Estado de tu orden #" . str_pad($orden->id, 4, '0', STR_PAD_LEFT) . ": " . strtoupper($orden->estado) . ".";
+                $mensaje = "Hola " . $orden->cliente_nombre . ", te escribimos de " . $sistema->nombre_sistema . ". Estado de tu orden #" . str_pad($orden->id, 4, '0', STR_PAD_LEFT) . ": " . $orden->estado . ".";
                 $linkWhatsapp = "https://wa.me/51" . preg_replace('/[^0-9]/', '', $orden->cliente_telefono) . "?text=" . urlencode($mensaje);
             ?>
             <a href="<?php echo $linkWhatsapp; ?>" target="_blank" class="btn btn-success text-white me-2">
@@ -32,7 +34,7 @@
             <i class="fa-solid fa-tag"></i> Etiqueta
         </a>
 
-        <?php if($orden->estado == 'reparado' || $orden->estado == 'entregado'): ?>
+        <?php if($orden->estado == 'Cerrada' || $orden->estado == 'Entregada'): ?>
             <a href="/ordenes/garantia?id=<?php echo $orden->id; ?>" target="_blank" class="btn btn-info text-white me-2">
                 <i class="fa-solid fa-certificate"></i> Garantía
             </a>
@@ -53,11 +55,11 @@
                 
                 <?php 
                     $badgeClass = 'bg-secondary';
-                    if($orden->estado == 'pendiente') $badgeClass = 'bg-warning text-dark';
-                    if($orden->estado == 'diagnostico') $badgeClass = 'bg-info text-dark';
-                    if($orden->estado == 'reparado') $badgeClass = 'bg-primary';
-                    if($orden->estado == 'entregado') $badgeClass = 'bg-success';
-                    if($orden->estado == 'cancelado') $badgeClass = 'bg-danger';
+                    if($orden->estado == 'Abierta') $badgeClass = 'bg-warning text-dark';
+                    if($orden->estado == 'En proceso') $badgeClass = 'bg-info text-dark';
+                    if($orden->estado == 'Cerrada') $badgeClass = 'bg-primary';
+                    if($orden->estado == 'Entregada') $badgeClass = 'bg-success';
+                    if($orden->estado == 'Cancelada') $badgeClass = 'bg-danger';
                 ?>
                 <span class="badge <?php echo $badgeClass; ?> fs-5 mb-3 px-4 py-2"><?php echo strtoupper($orden->estado); ?></span>
                 
@@ -67,30 +69,30 @@
                         <li>
                             <form action="/ordenes/cambiar-estado" method="POST">
                                 <input type="hidden" name="id" value="<?php echo $orden->id; ?>">
-                                <input type="hidden" name="nuevo_estado" value="pendiente">
-                                <button class="dropdown-item">Pendiente</button>
+                                <input type="hidden" name="nuevo_estado" value="Abierta">
+                                <button class="dropdown-item">Abierta</button>
                             </form>
                         </li>
                         <li>
                             <form action="/ordenes/cambiar-estado" method="POST">
                                 <input type="hidden" name="id" value="<?php echo $orden->id; ?>">
-                                <input type="hidden" name="nuevo_estado" value="diagnostico">
-                                <button class="dropdown-item">En Diagnóstico</button>
+                                <input type="hidden" name="nuevo_estado" value="En proceso">
+                                <button class="dropdown-item">En proceso</button>
                             </form>
                         </li>
                         <li>
                             <form action="/ordenes/cambiar-estado" method="POST">
                                 <input type="hidden" name="id" value="<?php echo $orden->id; ?>">
-                                <input type="hidden" name="nuevo_estado" value="reparado">
-                                <button class="dropdown-item">Reparado</button>
+                                <input type="hidden" name="nuevo_estado" value="Cerrada">
+                                <button class="dropdown-item">Cerrada</button>
                             </form>
                         </li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form action="/ordenes/cambiar-estado" method="POST">
                                 <input type="hidden" name="id" value="<?php echo $orden->id; ?>">
-                                <input type="hidden" name="nuevo_estado" value="entregado">
-                                <button class="dropdown-item text-success fw-bold">Entregar</button>
+                                <input type="hidden" name="nuevo_estado" value="Entregada">
+                                <button class="dropdown-item text-success fw-bold">Entregada</button>
                             </form>
                         </li>
                     </ul>
@@ -166,7 +168,7 @@
                                     <td class="text-end"><?php echo $sistema->simbolo_moneda . number_format($sv->precio_unitario, 2); ?></td>
                                     <td class="text-end"><?php echo $sistema->simbolo_moneda . number_format($sv->subtotal, 2); ?></td>
                                     <td class="text-end">
-                                        <?php if($orden->estado != 'entregado'): ?>
+                                        <?php if($orden->estado != 'Entregada' && $orden->estado != 'Cerrada'): ?>
                                         <form action="/ordenes/eliminar-servicio" method="POST" onsubmit="return confirm('¿Eliminar servicio?');">
                                             <input type="hidden" name="detalle_id" value="<?php echo $sv->id; ?>">
                                             <input type="hidden" name="orden_id" value="<?php echo $orden->id; ?>">
@@ -177,7 +179,7 @@
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
-                        <?php if($orden->estado != 'entregado'): ?>
+                        <?php if($orden->estado != 'Entregada' && $orden->estado != 'Cerrada'): ?>
                         <tr class="bg-light">
                             <form action="/ordenes/agregar-servicio" method="POST">
                                 <input type="hidden" name="orden_id" value="<?php echo $orden->id; ?>">
@@ -232,7 +234,7 @@
                                     <td class="text-end"><?php echo $sistema->simbolo_moneda . number_format($rep->precio_unitario, 2); ?></td>
                                     <td class="text-end"><?php echo $sistema->simbolo_moneda . number_format($rep->subtotal, 2); ?></td>
                                     <td class="text-end">
-                                        <?php if($orden->estado != 'entregado'): ?>
+                                        <?php if($orden->estado != 'Entregada' && $orden->estado != 'Cerrada'): ?>
                                         <form action="/ordenes/eliminar-repuesto" method="POST" onsubmit="return confirm('¿Devolver al inventario?');">
                                             <input type="hidden" name="detalle_id" value="<?php echo $rep->id; ?>">
                                             <button type="submit" class="btn btn-sm text-danger"><i class="fa-solid fa-trash"></i></button>
@@ -243,7 +245,7 @@
                             <?php endforeach; ?>
                         <?php endif; ?>
                         
-                        <?php if($orden->estado != 'entregado'): ?>
+                        <?php if($orden->estado != 'Entregada' && $orden->estado != 'Cerrada'): ?>
                         <tr class="bg-light">
                             <form action="/ordenes/agregar-repuesto" method="POST">
                                 <input type="hidden" name="orden_id" value="<?php echo $orden->id; ?>">
@@ -273,7 +275,7 @@
                         <tr>
                             <td colspan="3" class="text-end align-middle"><strong>Mano de Obra:</strong></td>
                             <td class="text-end">
-                                <?php if($orden->estado != 'entregado'): ?>
+                                <?php if($orden->estado != 'Entregada' && $orden->estado != 'Cerrada'): ?>
                                     <form action="/ordenes/mano-obra" method="POST" class="d-flex justify-content-end">
                                         <input type="hidden" name="orden_id" value="<?php echo $orden->id; ?>">
                                         <div class="input-group input-group-sm" style="width: 120px;">

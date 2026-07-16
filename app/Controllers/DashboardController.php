@@ -21,11 +21,11 @@ class DashboardController extends BaseController {
         $db = $this->db;
         
         // Contar Pendientes (Pendiente + Diagnostico)
-        $stmt = $db->query("SELECT COUNT(*) as total FROM ordenes_servicio WHERE estado IN ('pendiente', 'diagnostico')");
+        $stmt = $db->query("SELECT COUNT(*) as total FROM ordenes_servicio WHERE estado IN ('Abierta', 'En proceso')");
         $pendientes = $stmt->fetch(PDO::FETCH_OBJ)->total ?? 0;
 
-        // Contar Listos (Reparado)
-        $stmt = $db->query("SELECT COUNT(*) as total FROM ordenes_servicio WHERE estado = 'reparado'");
+        // Contar Listos (Cerrada)
+        $stmt = $db->query("SELECT COUNT(*) as total FROM ordenes_servicio WHERE estado = 'Cerrada'");
         $listos = $stmt->fetch(PDO::FETCH_OBJ)->total ?? 0;
 
         // 3. Obtener las 5 órdenes más recientes

@@ -79,6 +79,11 @@ class OrdenController extends BaseController {
                     header('Location: /ordenes?msg=vehiculo_invalido');
                     exit;
                 }
+                // MSJ-09: Validar que el vehículo pertenezca al cliente seleccionado
+                if ($vehiculo->cliente_id != $_POST['cliente_id']) {
+                    header('Location: /ordenes?msg=vehiculo_invalido');
+                    exit;
+                }
             }
 
             $data = [
@@ -106,7 +111,7 @@ class OrdenController extends BaseController {
         }
     }
 
-    // RF-04 + RN-05: Diagnóstico requerido antes de cambiar a 'reparado' o 'entregado'
+    // RF-04 + RN-05: Diagnóstico requerido antes de cambiar a 'Cerrada' o 'Entregada'
     public function cambiarEstado() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = $_POST['id'];
@@ -119,24 +124,24 @@ class OrdenController extends BaseController {
                 exit;
             }
 
-            // RN-05: Validar que el diagnóstico exista antes de pasar a reparado/entregado
-            if (in_array($estado, ['reparado', 'entregado']) && empty(trim($orden->observaciones_tecnicas ?? '')) && empty(trim($orden->diagnostico ?? ''))) {
+            // RN-05: Validar que el diagnóstico exista antes de pasar a Cerrada/Entregada
+            if (in_array($estado, ['Cerrada', 'Entregada']) && empty(trim($orden->observaciones_tecnicas ?? '')) && empty(trim($orden->diagnostico ?? ''))) {
                 echo "<div style='padding:20px; font-family:sans-serif; text-align:center;'>";
                 echo "<h2 style='color:red;'>MSJ-28: Diagnóstico requerido (RN-05)</h2>";
-                echo "<p><strong>RN-05:</strong> Debe registrar el diagnóstico técnico antes de cambiar el estado a 'Reparado' o 'Entregado'.</p>";
+                echo "<p><strong>RN-05:</strong> Debe registrar el diagnóstico técnico antes de cerrar la orden.</p>";
                 echo "<p>Agregue el diagnóstico en la sección 'Informe Técnico' del detalle de la orden.</p>";
                 echo "<br><a href='/ordenes/detalle?id=$id' class='btn btn-primary'>Ir al detalle</a>";
                 echo "</div>";
                 exit;
             }
 
-            // RF-05: Validar que exista al menos un servicio registrado antes de reparado/entregado
-            if (in_array($estado, ['reparado', 'entregado'])) {
+            // RF-05: Validar que exista al menos un servicio registrado antes de Cerrada/Entregada
+            if (in_array($estado, ['Cerrada', 'Entregada'])) {
                 $servicios = $ordenModel->getServicios($id);
                 if (empty($servicios)) {
                     echo "<div style='padding:20px; font-family:sans-serif; text-align:center;'>";
                     echo "<h2 style='color:red;'>MSJ-37: Servicios requeridos (RF-05)</h2>";
-                    echo "<p><strong>RF-05:</strong> Debe registrar al menos un servicio en la orden antes de cambiarla a 'Reparado' o 'Entregado'.</p>";
+                    echo "<p><strong>RF-05:</strong> Debe registrar al menos un servicio en la orden antes de cerrarla.</p>";
                     echo "<p>Agregue servicios en la sección 'Servicios' del detalle de la orden.</p>";
                     echo "<br><a href='/ordenes/detalle?id=$id' class='btn btn-primary'>Ir al detalle</a>";
                     echo "</div>";
@@ -144,9 +149,9 @@ class OrdenController extends BaseController {
                 }
             }
 
-            // RN-05: Si se entrega, registrar fecha_entrega
+            // Registrar fecha_entrega al entregar
             $datosNuevos = ['estado' => $estado];
-            if ($estado === 'entregado') {
+            if ($estado === 'Entregada') {
                 try {
                     $this->db->prepare("UPDATE ordenes_servicio SET fecha_entrega = NOW() WHERE id = :id")->execute([':id' => $id]);
                     $datosNuevos['fecha_entrega'] = date('Y-m-d H:i:s');
@@ -184,17 +189,21 @@ class OrdenController extends BaseController {
             $precio = $producto->precio_venta ?? 0;
 
             $ordenModel = new Orden();
-            $resultado = $ordenModel->addRepuesto([
-                'orden_id' => $ordenId,
-                'producto_id' => $productoId,
-                'cantidad' => $cantidad,
-                'precio_unitario' => $precio,
-            ]);
-            if ($resultado) {
-                $this->registrarAuditoria('orden_repuestos', null, 'agregar_repuesto', null, "Orden #$ordenId - Producto #$productoId x$cantidad");
-                header("Location: /ordenes/detalle?id=" . $ordenId);
-            } else {
-                header("Location: /ordenes/detalle?id=" . $ordenId . "&msg=stock_insuficiente");
+            try {
+                $resultado = $ordenModel->addRepuesto([
+                    'orden_id' => $ordenId,
+                    'producto_id' => $productoId,
+                    'cantidad' => $cantidad,
+                    'precio_unitario' => $precio,
+                ]);
+                if ($resultado) {
+                    $this->registrarAuditoria('orden_repuestos', null, 'agregar_repuesto', null, "Orden #$ordenId - Producto #$productoId x$cantidad");
+                    header("Location: /ordenes/detalle?id=" . $ordenId);
+                } else {
+                    header("Location: /ordenes/detalle?id=" . $ordenId . "&msg=stock_insuficiente");
+                }
+            } catch (\Exception $e) {
+                header("Location: /ordenes/detalle?id=" . $ordenId . "&msg=error_inventario");
             }
             exit;
         }

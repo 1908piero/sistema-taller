@@ -8,9 +8,17 @@
     <?php elseif ($_GET['msg'] == 'placa_duplicada'): ?>
         <div class="alert alert-danger"><strong>RN-02:</strong> Ya existe un vehículo con esa placa. La placa debe ser única.</div>
     <?php elseif ($_GET['msg'] == 'cliente_invalido'): ?>
-        <div class="alert alert-danger"><strong>RN-02:</strong> El cliente seleccionado no existe. Seleccione un cliente válido.</div>
+        <div class="alert alert-danger"><strong>MSJ-05:</strong> Debe seleccionar un cliente registrado.</div>
     <?php elseif ($_GET['msg'] == 'error'): ?>
-        <div class="alert alert-danger">Error al guardar. Verifique los datos.</div>
+        <div class="alert alert-danger"><strong>MSJ-06:</strong> Error al guardar datos del vehículo.</div>
+    <?php elseif ($_GET['msg'] == 'placa_invalida'): ?>
+        <div class="alert alert-danger">La placa debe tener exactamente 7 caracteres alfanuméricos (ej: ABC-123).</div>
+    <?php elseif ($_GET['msg'] == 'marca_invalida'): ?>
+        <div class="alert alert-danger">La marca solo debe contener letras (máximo 50 caracteres).</div>
+    <?php elseif ($_GET['msg'] == 'modelo_invalido'): ?>
+        <div class="alert alert-danger">El modelo solo debe contener caracteres alfanuméricos (máximo 50).</div>
+    <?php elseif ($_GET['msg'] == 'anio_invalido'): ?>
+        <div class="alert alert-danger">El año debe estar entre 1900 y 2030.</div>
     <?php endif; ?>
 <?php endif; ?>
 
@@ -106,21 +114,21 @@
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Placa *</label>
-                            <input type="text" name="placa" id="v_placa" class="form-control text-uppercase" placeholder="ABC-123" required maxlength="10">
+                            <input type="text" name="placa" id="v_placa" class="form-control text-uppercase" placeholder="ABC-123" required maxlength="7">
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Año</label>
-                            <input type="number" name="año" id="v_año" class="form-control" min="1950" max="2030">
+                            <input type="number" name="año" id="v_año" class="form-control" min="1900" max="2030">
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Marca *</label>
-                            <input type="text" name="marca" id="v_marca" class="form-control" placeholder="Toyota" required>
+                            <input type="text" name="marca" id="v_marca" class="form-control" placeholder="Toyota" required maxlength="50">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Modelo *</label>
-                            <input type="text" name="modelo" id="v_modelo" class="form-control" placeholder="Corolla" required>
+                            <input type="text" name="modelo" id="v_modelo" class="form-control" placeholder="Corolla" required maxlength="50">
                         </div>
                     </div>
                     <div class="row">

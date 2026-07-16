@@ -41,7 +41,7 @@
                                 <td><?php echo date('d/m/Y', strtotime($o->fecha_recepcion)); ?></td>
                                 <td>
                                     <?php
-                                    $badges = ['pendiente'=>'warning','diagnostico'=>'info','reparado'=>'primary','entregado'=>'success','cancelado'=>'danger'];
+                                    $badges = ['Abierta'=>'warning','En proceso'=>'info','Cerrada'=>'primary','Entregada'=>'success','Cancelada'=>'danger'];
                                     $b = $badges[$o->estado] ?? 'secondary';
                                     echo "<span class='badge bg-$b'>".ucfirst($o->estado)."</span>";
                                     ?>

@@ -22,10 +22,10 @@ class ReporteController extends BaseController {
         foreach($estadosOrdenes as $estado) {
             $labelsEstado[] = ucfirst($estado->estado);
             $dataEstado[] = $estado->cantidad;
-            if($estado->estado == 'pendiente') $coloresEstado[] = '#ffc107';
-            elseif($estado->estado == 'diagnostico') $coloresEstado[] = '#0dcaf0';
-            elseif($estado->estado == 'reparado') $coloresEstado[] = '#0d6efd';
-            elseif($estado->estado == 'entregado') $coloresEstado[] = '#198754';
+            if($estado->estado == 'Abierta') $coloresEstado[] = '#ffc107';
+            elseif($estado->estado == 'En proceso') $coloresEstado[] = '#0dcaf0';
+            elseif($estado->estado == 'Cerrada') $coloresEstado[] = '#0d6efd';
+            elseif($estado->estado == 'Entregada') $coloresEstado[] = '#198754';
             else $coloresEstado[] = '#dc3545';
         }
 

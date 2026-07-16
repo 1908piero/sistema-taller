@@ -79,10 +79,10 @@
                     $estado = $resultado->estado;
                     $step1 = $step2 = $step3 = $step4 = '';
                     
-                    if($estado == 'pendiente') { $step1 = 'active'; }
-                    if($estado == 'diagnostico') { $step1 = 'active'; $step2 = 'active'; }
-                    if($estado == 'reparado') { $step1 = 'active'; $step2 = 'active'; $step3 = 'active'; }
-                    if($estado == 'entregado') { $step1 = 'active'; $step2 = 'active'; $step3 = 'active'; $step4 = 'active'; }
+                    if($estado == 'Abierta') { $step1 = 'active'; }
+                    if($estado == 'En proceso') { $step1 = 'active'; $step2 = 'active'; }
+                    if($estado == 'Cerrada') { $step1 = 'active'; $step2 = 'active'; $step3 = 'active'; }
+                    if($estado == 'Entregada') { $step1 = 'active'; $step2 = 'active'; $step3 = 'active'; $step4 = 'active'; }
                 ?>
 
                 <div class="timeline-steps mt-5">
@@ -117,7 +117,7 @@
                     </div>
                     <div class="col-12 mt-2">
                         <small class="text-muted d-block">Estado Actual</small>
-                        <?php if($estado == 'reparado'): ?>
+                        <?php if($estado == 'Cerrada'): ?>
                             <div class="alert alert-success py-2 mt-1 mb-0">
                                 <i class="fa-solid fa-check-circle me-2"></i> <strong>¡Tu equipo está listo!</strong> Puedes pasar a recogerlo.
                             </div>

@@ -10,17 +10,17 @@
 </div>
 
 <?php if (isset($_GET['msg'])): ?>
-    <div class="alert alert-info alert-dismissible fade show">
-        <?php 
-            if($_GET['msg'] == 'guardado') echo "Orden generada exitosamente.";
-            elseif($_GET['msg'] == 'estado_actualizado') echo "Estado actualizado.";
-            elseif($_GET['msg'] == 'cliente_invalido') echo "<strong>RF-03:</strong> El cliente seleccionado no existe.";
-            elseif($_GET['msg'] == 'vehiculo_invalido') echo "<strong>RF-03:</strong> El vehículo seleccionado no existe.";
-            elseif($_GET['msg'] == 'error') echo "<i class='fa-solid fa-triangle-exclamation'></i> Error al guardar. Verifica que todos los campos requeridos estén llenos.";
-            else echo "Acción realizada.";
-        ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+    <?php if($_GET['msg'] == 'guardado'): ?>
+        <div class="alert alert-success alert-dismissible fade show"><strong>MSJ-07:</strong> Orden de trabajo registrada correctamente.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'estado_actualizado'): ?>
+        <div class="alert alert-info alert-dismissible fade show">Estado actualizado.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'cliente_invalido'): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-08:</strong> Cliente no encontrado en el sistema.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'vehiculo_invalido'): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-09:</strong> El vehículo no está asociado al cliente.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'error'): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-11:</strong> Error en la conexión con la base de datos.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php endif; ?>
 <?php endif; ?>
 
 <div class="card shadow-sm">
@@ -42,11 +42,11 @@
                         <?php foreach($ordenes as $orden): ?>
                             <?php 
                                 $badgeClass = 'bg-secondary';
-                                if($orden->estado == 'pendiente') $badgeClass = 'bg-warning text-dark';
-                                if($orden->estado == 'diagnostico') $badgeClass = 'bg-info text-dark';
-                                if($orden->estado == 'reparado') $badgeClass = 'bg-primary';
-                                if($orden->estado == 'entregado') $badgeClass = 'bg-success';
-                                if($orden->estado == 'cancelado') $badgeClass = 'bg-danger';
+                                if($orden->estado == 'Abierta') $badgeClass = 'bg-warning text-dark';
+                                if($orden->estado == 'En proceso') $badgeClass = 'bg-info text-dark';
+                                if($orden->estado == 'Cerrada') $badgeClass = 'bg-primary';
+                                if($orden->estado == 'Entregada') $badgeClass = 'bg-success';
+                                if($orden->estado == 'Cancelada') $badgeClass = 'bg-danger';
                             ?>
                             <tr>
                                 <td><strong><?php echo 'ORD-' . str_pad($orden->id, 4, '0', STR_PAD_LEFT); ?></strong></td>
@@ -66,11 +66,11 @@
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">Estado</button>
                                         <ul class="dropdown-menu">
-                                            <li><form action="/ordenes/cambiar-estado" method="POST"><input type="hidden" name="id" value="<?php echo $orden->id; ?>"><input type="hidden" name="nuevo_estado" value="pendiente"><button class="dropdown-item">Pendiente</button></form></li>
-                                            <li><form action="/ordenes/cambiar-estado" method="POST"><input type="hidden" name="id" value="<?php echo $orden->id; ?>"><input type="hidden" name="nuevo_estado" value="diagnostico"><button class="dropdown-item">En Diagnóstico</button></form></li>
-                                            <li><form action="/ordenes/cambiar-estado" method="POST"><input type="hidden" name="id" value="<?php echo $orden->id; ?>"><input type="hidden" name="nuevo_estado" value="reparado"><button class="dropdown-item">Reparado</button></form></li>
+                                            <li><form action="/ordenes/cambiar-estado" method="POST"><input type="hidden" name="id" value="<?php echo $orden->id; ?>"><input type="hidden" name="nuevo_estado" value="Abierta"><button class="dropdown-item">Abierta</button></form></li>
+                                            <li><form action="/ordenes/cambiar-estado" method="POST"><input type="hidden" name="id" value="<?php echo $orden->id; ?>"><input type="hidden" name="nuevo_estado" value="En proceso"><button class="dropdown-item">En proceso</button></form></li>
+                                            <li><form action="/ordenes/cambiar-estado" method="POST"><input type="hidden" name="id" value="<?php echo $orden->id; ?>"><input type="hidden" name="nuevo_estado" value="Cerrada"><button class="dropdown-item">Cerrada</button></form></li>
                                             <li><hr class="dropdown-divider"></li>
-                                            <li><form action="/ordenes/cambiar-estado" method="POST"><input type="hidden" name="id" value="<?php echo $orden->id; ?>"><input type="hidden" name="nuevo_estado" value="entregado"><button class="dropdown-item text-success">Entregar</button></form></li>
+                                            <li><form action="/ordenes/cambiar-estado" method="POST"><input type="hidden" name="id" value="<?php echo $orden->id; ?>"><input type="hidden" name="nuevo_estado" value="Entregada"><button class="dropdown-item text-success">Entregada</button></form></li>
                                         </ul>
                                     </div>
                                     <a href="/ordenes/detalle?id=<?php echo $orden->id; ?>" class="btn btn-sm btn-primary" title="Ver Detalle"><i class="fa-solid fa-eye"></i></a>

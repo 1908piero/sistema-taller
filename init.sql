@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS `ordenes_servicio` (
   `direccion_servicio` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `fecha_recepcion` datetime DEFAULT CURRENT_TIMESTAMP,
   `fecha_promesa` datetime DEFAULT NULL,
-  `estado` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pendiente',
+  `estado` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Abierta',
   `equipo_tipo` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `equipo_marca` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `equipo_modelo` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,

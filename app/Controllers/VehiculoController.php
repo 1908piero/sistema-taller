@@ -28,6 +28,18 @@ class VehiculoController extends BaseController {
         ]);
     }
 
+    private function validarDatosVehiculo($data) {
+        // Placa: exactamente 7 caracteres alfanuméricos
+        if (!preg_match('/^[A-Za-z0-9\-]{7}$/', $data['placa'])) { return 'placa_invalida'; }
+        // Marca: alfabético, máximo 50
+        if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{1,50}$/', $data['marca'])) { return 'marca_invalida'; }
+        // Modelo: alfanumérico, máximo 50
+        if (!preg_match('/^[A-Za-z0-9áéíóúÁÉÍÓÚñÑ\s\-]{1,50}$/', $data['modelo'])) { return 'modelo_invalido'; }
+        // Año: 4 dígitos entre 1900 y 2030
+        if (!empty($data['año']) && (!preg_match('/^\d{4}$/', $data['año']) || $data['año'] < 1900 || $data['año'] > 2030)) { return 'anio_invalido'; }
+        return null;
+    }
+
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $vehiculoModel = new Vehiculo();
@@ -41,6 +53,13 @@ class VehiculoController extends BaseController {
             }
 
             $placa = strtoupper(trim($_POST['placa']));
+
+            // CU-02: Validar formato de campos
+            $error = $this->validarDatosVehiculo($_POST);
+            if ($error) {
+                header("Location: /vehiculos?msg=$error");
+                exit;
+            }
 
             // RN-02: Validar placa única
             if ($vehiculoModel->getByPlaca($placa)) {
@@ -86,6 +105,13 @@ class VehiculoController extends BaseController {
             }
 
             $placa = strtoupper(trim($_POST['placa']));
+
+            // CU-02: Validar formato de campos
+            $error = $this->validarDatosVehiculo($_POST);
+            if ($error) {
+                header("Location: /vehiculos?msg=$error");
+                exit;
+            }
 
             // RN-02: Validar placa única (excluyendo este registro)
             if ($vehiculoModel->getByPlaca($placa, $id)) {

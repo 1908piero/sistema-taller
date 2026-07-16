@@ -95,9 +95,9 @@
                                 <?php foreach($ordenes as $o): ?>
                                     <?php 
                                         $badge = 'bg-secondary';
-                                        if($o->estado == 'pendiente') $badge = 'bg-warning text-dark';
-                                        if($o->estado == 'reparado') $badge = 'bg-primary';
-                                        if($o->estado == 'entregado') $badge = 'bg-success';
+                                        if($o->estado == 'Abierta') $badge = 'bg-warning text-dark';
+                                        if($o->estado == 'Cerrada') $badge = 'bg-primary';
+                                        if($o->estado == 'Entregada') $badge = 'bg-success';
                                     ?>
                                     <tr>
                                         <td><strong>ORD-<?php echo str_pad($o->id, 4, '0', STR_PAD_LEFT); ?></strong></td>

@@ -119,7 +119,7 @@ class PagoController extends BaseController {
         $fecha = $_GET['fecha'] ?? date('Y-m-d');
 
         $ordenModel = new Orden();
-        $ordenes = $ordenModel->getAllByEstado('reparado');
+        $ordenes = $ordenModel->getAllByEstado('Cerrada');
 
         $resumen = $pagoModel->getResumenDia($fecha);
 

@@ -64,8 +64,8 @@ class Pago extends BaseModel {
             ]);
 
             if ($result) {
-                // Actualizar estado de la orden a 'entregado' si estaba 'reparado'
-                $stmt2 = $this->db->prepare("UPDATE ordenes_servicio SET estado = 'entregado' WHERE id = :id AND estado = 'reparado'");
+                // Actualizar estado de la orden a 'Entregada' si estaba 'Cerrada'
+                $stmt2 = $this->db->prepare("UPDATE ordenes_servicio SET estado = 'Entregada' WHERE id = :id AND estado = 'Cerrada'");
                 $stmt2->execute([':id' => $data['orden_id']]);
             }
 

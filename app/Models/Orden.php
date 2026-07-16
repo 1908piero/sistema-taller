@@ -59,7 +59,7 @@ class Orden extends BaseModel {
                     fecha_recepcion, fecha_promesa, estado, equipo_tipo, equipo_marca, equipo_modelo, equipo_serie, 
                     falla_reportada, costo_mano_obra, total) 
                     VALUES (:cliente_id, :usuario_id, :vehiculo_id, :tipo_servicio, :direccion_servicio, 
-                    NOW(), :fecha_promesa, 'pendiente', :equipo_tipo, :equipo_marca, :equipo_modelo, :equipo_serie, 
+                    NOW(), :fecha_promesa, 'Abierta', :equipo_tipo, :equipo_marca, :equipo_modelo, :equipo_serie, 
                     :falla_reportada, 0, 0)";
             $stmt = $this->db->prepare($sql);
             $result = $stmt->execute([
@@ -148,7 +148,7 @@ class Orden extends BaseModel {
             return true;
         } catch (\Exception $e) {
             $this->db->rollBack();
-            return false;
+            throw $e;
         }
     }
 
