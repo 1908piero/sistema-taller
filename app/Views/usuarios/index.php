@@ -57,7 +57,7 @@
                                     <?php elseif($user->rol == 'Recepcionista'): ?>
                                         <span class="badge bg-success">RECEPCIONISTA</span>
                                     <?php else: ?>
-                                        <span class="badge bg-info text-dark">MECÁNICO</span>
+                                        <span class="badge bg-info text-dark">TÉCNICO</span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
@@ -120,7 +120,7 @@
                         <label class="form-label">Rol *</label>
                         <select class="form-select" name="rol" id="rol" required>
                             <option value="Recepcionista">Recepcionista</option>
-                            <option value="Mecánico">Mecánico</option>
+                            <option value="Técnico">Técnico</option>
                             <option value="Admin">Administrador</option>
                             <option value="Jefe">Jefe de Taller</option>
                         </select>

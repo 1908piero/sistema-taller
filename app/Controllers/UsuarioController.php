@@ -5,7 +5,7 @@ use App\Models\Usuario;
 
 class UsuarioController extends BaseController {
 
-    private $rolesPermitidos = ['Jefe', 'Admin', 'Recepcionista', 'Mecánico'];
+    private $rolesPermitidos = ['Jefe', 'Admin', 'Recepcionista', 'Técnico'];
 
     private function verificarPermiso() {
         if (!isset($_SESSION['user_role']) || !in_array($_SESSION['user_role'], ['Admin', 'Jefe'])) {
