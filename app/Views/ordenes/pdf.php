@@ -41,7 +41,7 @@ if (!empty($sistema->logo)) {
     <div class="header">
         <div class="logo-section">
             <?php if($logoBase64): ?>
-                <img src="<?php echo $logoBase64; ?>" style="max-height: 60px;">
+                <img src="<?php echo $logoBase64; ?>" style="max-height: 60px;" alt="Logo del taller">
             <?php else: ?>
                 <div class="logo-text"><?php echo $sistema->nombre_sistema; ?></div>
             <?php endif; ?>
@@ -62,7 +62,7 @@ if (!empty($sistema->logo)) {
                 <?php 
                     $urlRastreo = "http://" . $_SERVER['HTTP_HOST'] . "/rastreo?ticket=ORD-" . str_pad($orden->id, 4, '0', STR_PAD_LEFT);
                 ?>
-                <img src="http://bwipjs-api.metafloor.com/?bcid=qrcode&text=<?php echo urlencode($urlRastreo); ?>&scale=3" style="width: 60px; height: 60px;">
+                <img src="http://bwipjs-api.metafloor.com/?bcid=qrcode&text=<?php echo urlencode($urlRastreo); ?>&scale=3" style="width: 60px; height: 60px;" alt="Código QR para rastreo de orden">
                 <div style="font-size: 9px; color: #555;">Escanear para ver estado</div>
             </div>
         </div>

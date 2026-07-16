@@ -1,5 +1,15 @@
 <?php require_once __DIR__ . '/../partials/header.php'; ?>
 
+<?php if (isset($_GET['msg'])): ?>
+    <?php if ($_GET['msg'] == 'stock_insuficiente'): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-34:</strong> Stock insuficiente para completar la venta. Verifique el inventario.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif ($_GET['msg'] == 'vacio'): ?>
+        <div class="alert alert-warning alert-dismissible fade show"><strong>MSJ-35:</strong> Agregue al menos un producto al carrito.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif ($_GET['msg'] == 'error'): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>Error:</strong> No se pudo registrar la venta.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php endif; ?>
+<?php endif; ?>
+
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h2">Punto de Venta (POS)</h1>
     <a href="/ventas" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-arrow-left"></i> Historial</a>

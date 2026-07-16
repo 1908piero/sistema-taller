@@ -49,9 +49,11 @@ class VentaController extends BaseController {
             $ventaModel = new Venta();
             $ventaId = $ventaModel->create($data, $productos);
 
-            if ($ventaId) {
+            if ($ventaId && $ventaId !== -1) {
                 $this->registrarAuditoria('ventas', $ventaId, 'crear', null, $data);
                 header('Location: /ventas?msg=guardado&id=' . $ventaId);
+            } elseif ($ventaId === -1) {
+                header('Location: /ventas/crear?msg=stock_insuficiente');
             } else {
                 header('Location: /ventas/crear?msg=error');
             }

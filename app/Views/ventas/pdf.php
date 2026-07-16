@@ -30,7 +30,7 @@ if (!empty($sistema->logo)) {
 <body>
     <div class="header">
         <?php if($logoBase64): ?>
-            <img src="<?php echo $logoBase64; ?>" style="max-height: 40px;"><br>
+            <img src="<?php echo $logoBase64; ?>" style="max-height: 40px;" alt="Logo del taller"><br>
         <?php endif; ?>
         
         <strong style="font-size: 12px;"><?php echo $sistema->nombre_sistema; ?></strong><br>
@@ -70,7 +70,7 @@ if (!empty($sistema->logo)) {
     
     <div class="barcode">
         <?php $codigo = str_pad($venta->id, 8, '0', STR_PAD_LEFT); ?>
-        <img src="http://bwipjs-api.metafloor.com/?bcid=code128&text=<?php echo $codigo; ?>&scale=2&height=8&incltext=N" style="max-height: 30px;">
+        <img src="http://bwipjs-api.metafloor.com/?bcid=code128&text=<?php echo $codigo; ?>&scale=2&height=8&incltext=N" style="max-height: 30px;" alt="Código de barras de venta">
         <br>
         <?php echo $codigo; ?>
     </div>

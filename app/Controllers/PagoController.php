@@ -76,6 +76,9 @@ class PagoController extends BaseController {
                 $this->registrarAuditoria('pagos', $id, 'crear', null, $data);
                 header("Location: $ref?msg=ok&pago_id=$id");
                 exit;
+            } elseif ($pagoModel->getByOrden($data['orden_id'])) {
+                header("Location: $ref?msg=pago_duplicado");
+                exit;
             } else {
                 header("Location: $ref?msg=error");
                 exit;

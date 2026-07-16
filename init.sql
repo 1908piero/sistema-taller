@@ -202,6 +202,7 @@ CREATE TABLE IF NOT EXISTS `pagos` (
   KEY `orden_id` (`orden_id`),
   KEY `cliente_id` (`cliente_id`),
   KEY `usuario_id` (`usuario_id`),
+  UNIQUE KEY `uk_orden_unico` (`orden_id`),
   CONSTRAINT `pagos_ibfk_1` FOREIGN KEY (`orden_id`) REFERENCES `ordenes_servicio` (`id`),
   CONSTRAINT `pagos_ibfk_2` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`),
   CONSTRAINT `pagos_ibfk_3` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)

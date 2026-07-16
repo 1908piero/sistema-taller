@@ -37,9 +37,9 @@
         <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
             <?php if(!empty($sistema->logo)): ?>
                 <?php if(strpos($sistema->logo, 'data:') === 0): ?>
-                    <img src="<?php echo $sistema->logo; ?>" height="30" class="me-2">
+                    <img src="<?php echo $sistema->logo; ?>" height="30" class="me-2" alt="Logo del taller">
                 <?php elseif(file_exists($_SERVER['DOCUMENT_ROOT'] . '/public/uploads/logo/' . $sistema->logo)): ?>
-                    <img src="/uploads/logo/<?php echo $sistema->logo; ?>" height="30" class="me-2">
+                    <img src="/uploads/logo/<?php echo $sistema->logo; ?>" height="30" class="me-2" alt="Logo del taller">
                 <?php else: ?>
                     <i class="fa-solid fa-screwdriver-wrench me-2"></i>
                 <?php endif; ?>
@@ -72,7 +72,7 @@
         <hr>
         <div class="dropdown">
             <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
-                <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($_SESSION['user_name'] ?? 'Admin'); ?>&background=random" width="32" height="32" class="rounded-circle me-2">
+                <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($_SESSION['user_name'] ?? 'Admin'); ?>&background=random" width="32" height="32" class="rounded-circle me-2" alt="Avatar de usuario">
                 <strong><?php echo $_SESSION['user_name'] ?? 'Usuario'; ?></strong>
             </a>
             <ul class="dropdown-menu dropdown-menu-dark text-small shadow">

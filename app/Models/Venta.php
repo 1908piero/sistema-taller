@@ -54,6 +54,21 @@ class Venta extends BaseModel {
         try {
             $this->db->beginTransaction();
 
+            // RNF-10: Verificar stock suficiente antes de procesar
+            foreach ($productosCarrito as $prod) {
+                $stmt = $this->db->prepare("SELECT id, stock, nombre FROM productos WHERE id = :id LIMIT 1");
+                $stmt->execute([':id' => $prod['id']]);
+                $producto = $stmt->fetch(PDO::FETCH_OBJ);
+                if (!$producto) {
+                    $this->db->rollBack();
+                    return false;
+                }
+                if ($producto->stock < $prod['cantidad']) {
+                    $this->db->rollBack();
+                    return -1;
+                }
+            }
+
             // 1. Insertar Cabecera
             $sql = "INSERT INTO ventas (cliente_id, usuario_id, total) VALUES (:cliente_id, 1, :total)";
             $stmt = $this->db->prepare($sql);

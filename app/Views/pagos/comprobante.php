@@ -40,7 +40,7 @@ if (!empty($sistema->logo)) {
 
     <div class="center header">
         <?php if($logoBase64): ?>
-            <img src="<?php echo $logoBase64; ?>"><br>
+            <img src="<?php echo $logoBase64; ?>" alt="Logo del taller"><br>
         <?php endif; ?>
         <h2><?php echo htmlspecialchars($sistema->nombre_sistema ?? 'COMPROBANTE DE PAGO'); ?></h2>
         <p><?php echo htmlspecialchars($sistema->direccion ?? ''); ?></p>

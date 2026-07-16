@@ -51,6 +51,11 @@ class Pago extends BaseModel {
 
     public function create($data) {
         try {
+            $existing = $this->getByOrden($data['orden_id']);
+            if (!empty($existing)) {
+                return false;
+            }
+
             $sql = "INSERT INTO pagos (orden_id, cliente_id, monto, metodo_pago, referencia, estado, usuario_id) 
                     VALUES (:orden_id, :cliente_id, :monto, :metodo_pago, :referencia, 'completado', :usuario_id)";
             $stmt = $this->db->prepare($sql);

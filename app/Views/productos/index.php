@@ -44,9 +44,9 @@
                                 <td>
                                     <?php if($prod->imagen): ?>
                                         <?php if(strpos($prod->imagen, 'data:') === 0): ?>
-                                            <img src="<?php echo $prod->imagen; ?>" class="rounded" width="40" height="40" style="object-fit: cover;">
+                                            <img src="<?php echo $prod->imagen; ?>" class="rounded" width="40" height="40" style="object-fit: cover;" alt="<?php echo $prod->nombre; ?>">
                                         <?php elseif(file_exists($_SERVER['DOCUMENT_ROOT'] . '/public/uploads/productos/' . $prod->imagen)): ?>
-                                            <img src="/uploads/productos/<?php echo $prod->imagen; ?>" class="rounded" width="40" height="40" style="object-fit: cover;">
+                                            <img src="/uploads/productos/<?php echo $prod->imagen; ?>" class="rounded" width="40" height="40" style="object-fit: cover;" alt="<?php echo $prod->nombre; ?>">
                                         <?php else: ?>
                                             <div class="bg-secondary rounded text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="fa-solid fa-image"></i></div>
                                         <?php endif; ?>
@@ -160,7 +160,7 @@
                         <div class="col-md-4 text-center">
                             <label class="form-label">Imagen</label>
                             <div class="border rounded p-2 mb-2 bg-light">
-                                <img id="previewImg" src="https://via.placeholder.com/150?text=Sin+Imagen" class="img-fluid" style="max-height: 150px;">
+                                <img id="previewImg" src="https://via.placeholder.com/150?text=Sin+Imagen" class="img-fluid" style="max-height: 150px;" alt="Vista previa del producto">
                             </div>
                             <input type="file" class="form-control form-control-sm" name="imagen" accept="image/*" onchange="previewFile()">
                         </div>

@@ -22,7 +22,7 @@
                 $urlRastreo = "http://" . $_SERVER['HTTP_HOST'] . "/rastreo?ticket=ORD-" . str_pad($orden->id, 4, '0', STR_PAD_LEFT);
                 // Usamos la API para generar el QR
             ?>
-            <img src="http://bwipjs-api.metafloor.com/?bcid=qrcode&text=<?php echo urlencode($urlRastreo); ?>&scale=3" style="width: 50px; height: 50px;">
+            <img src="http://bwipjs-api.metafloor.com/?bcid=qrcode&text=<?php echo urlencode($urlRastreo); ?>&scale=3" style="width: 50px; height: 50px;" alt="Código QR de rastreo">
         </div>
 
         <div class="client"><?php echo $orden->cliente_nombre; ?></div>

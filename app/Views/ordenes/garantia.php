@@ -131,7 +131,7 @@ if (!empty($sistema->logo)) {
     <div class="border-container">
         <div class="header">
             <?php if($logoBase64): ?>
-                <img src="<?php echo $logoBase64; ?>" style="height: 40px; margin-bottom: 2px;">
+                <img src="<?php echo $logoBase64; ?>" style="height: 40px; margin-bottom: 2px;" alt="Logo del taller">
                 <br>
             <?php endif; ?>
             <div class="title">Certificado de Garantía</div>
