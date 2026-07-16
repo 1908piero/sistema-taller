@@ -2,12 +2,10 @@ FROM php:8.2-apache
 
 RUN a2enmod rewrite
 
-RUN docker-php-ext-install pdo pdo_mysql zip xml mbstring
-
 RUN apt-get update && apt-get install -y \
-    git unzip libicu-dev libpng-dev libjpeg-dev libfreetype6-dev && \
+    git unzip libicu-dev libpng-dev libjpeg-dev libfreetype6-dev libzip-dev && \
     docker-php-ext-configure gd --with-freetype --with-jpeg && \
-    docker-php-ext-install intl gd && \
+    docker-php-ext-install intl gd zip xml mbstring pdo pdo_mysql && \
     apt-get clean
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
