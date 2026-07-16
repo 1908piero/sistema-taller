@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   `nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `rol` enum('admin','tecnico','vendedor') COLLATE utf8mb4_unicode_ci DEFAULT 'tecnico',
+  `rol` enum('Jefe','Admin','Recepcionista','Mecánico') COLLATE utf8mb4_unicode_ci DEFAULT 'Recepcionista',
   `estado` tinyint DEFAULT '1',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),

@@ -8,7 +8,7 @@ use Dompdf\Options;
 class ReporteController extends BaseController {
 
     private function verificarAdmin() {
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+        if (!isset($_SESSION['user_role']) || !in_array($_SESSION['user_role'], ['Admin', 'Jefe'])) {
             header('Location: /dashboard');
             exit;
         }

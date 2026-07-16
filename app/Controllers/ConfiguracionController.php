@@ -48,7 +48,7 @@ class ConfiguracionController extends BaseController {
     }
 
     public function backup() {
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+        if (!isset($_SESSION['user_role']) || !in_array($_SESSION['user_role'], ['Admin', 'Jefe'])) {
             header('Location: /?msg=no_autorizado');
             exit;
         }

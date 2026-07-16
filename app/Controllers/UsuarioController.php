@@ -5,10 +5,10 @@ use App\Models\Usuario;
 
 class UsuarioController extends BaseController {
 
-    private $rolesPermitidos = ['admin', 'tecnico', 'vendedor'];
+    private $rolesPermitidos = ['Jefe', 'Admin', 'Recepcionista', 'Mecánico'];
 
     private function verificarPermiso() {
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+        if (!isset($_SESSION['user_role']) || !in_array($_SESSION['user_role'], ['Admin', 'Jefe'])) {
             header('Location: /?msg=no_autorizado');
             exit;
         }
@@ -20,6 +20,13 @@ class UsuarioController extends BaseController {
             header('Location: /usuarios?msg=rol_invalido');
             exit;
         }
+    }
+
+    // CU-07: Validar nombre solo letras
+    private function validarDatosUsuario($data) {
+        if (empty(trim($data['nombre'] ?? ''))) { return 'nombre_requerido'; }
+        if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{1,100}$/', $data['nombre'])) { return 'nombre_invalido'; }
+        return null;
     }
 
     public function index() {
@@ -38,6 +45,10 @@ class UsuarioController extends BaseController {
         $this->verificarPermiso();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // CU-07: Validar datos de entrada
+            $error = $this->validarDatosUsuario($_POST);
+            if ($error) { header("Location: /usuarios?msg=$error"); exit; }
+
             // RF-13: Validar rol permitido
             $this->validarRol($_POST['rol']);
 
@@ -70,6 +81,10 @@ class UsuarioController extends BaseController {
         $this->verificarPermiso();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // CU-07: Validar datos de entrada
+            $error = $this->validarDatosUsuario($_POST);
+            if ($error) { header("Location: /usuarios?msg=$error"); exit; }
+
             // RF-13: Validar rol permitido
             $this->validarRol($_POST['rol']);
 

@@ -59,7 +59,7 @@
             <li><a href="/productos" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/productos') !== false) ? 'active' : ''; ?>"><i class="fa-solid fa-box-open me-2"></i> Inventario</a></li>
             <li><a href="/ventas" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/ventas') !== false) ? 'active' : ''; ?>"><i class="fa-solid fa-cart-shopping me-2"></i> Ventas</a></li>
             
-            <?php if(isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+            <?php if(isset($_SESSION['user_role']) && in_array($_SESSION['user_role'], ['Admin', 'Jefe'])): ?>
                 <hr class="text-secondary">
                 <div class="small text-muted text-uppercase mb-1 ms-2" style="font-size:0.7em;">Administración</div>
                 <li><a href="/gastos" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/gastos') !== false) ? 'active' : ''; ?>"><i class="fa-solid fa-money-bill-wave me-2"></i> Gastos</a></li>

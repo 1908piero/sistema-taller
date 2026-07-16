@@ -10,18 +10,19 @@
 </div>
 
 <?php if (isset($_GET['msg'])): ?>
-    <div class="alert alert-info alert-dismissible fade show">
-        <?php 
-            if($_GET['msg'] == 'guardado') echo "Usuario creado correctamente.";
-            elseif($_GET['msg'] == 'actualizado') echo "Datos actualizados.";
-            elseif($_GET['msg'] == 'error_propio') echo "No puedes desactivar tu propia cuenta.";
-            elseif($_GET['msg'] == 'email_duplicado') echo "<strong>RF-12:</strong> El correo electrónico ya está registrado por otro usuario. Use uno diferente.";
-            elseif($_GET['msg'] == 'estado_cambiado') echo "Estado de usuario actualizado.";
-            elseif($_GET['msg'] == 'rol_invalido') echo "<strong>RF-13:</strong> El rol seleccionado no es válido. Seleccione Administrador, Técnico o Vendedor.";
-            else echo "Operación realizada.";
-        ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+    <?php if($_GET['msg'] == 'guardado' || $_GET['msg'] == 'actualizado' || $_GET['msg'] == 'estado_cambiado'): ?>
+        <div class="alert alert-success alert-dismissible fade show"><strong>MSJ-22:</strong> Operación realizada correctamente.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'email_duplicado'): ?>
+        <div class="alert alert-warning alert-dismissible fade show"><strong>MSJ-23:</strong> El usuario ya existe en el sistema.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'rol_invalido'): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-24:</strong> Rol no válido o sin permisos asignados.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'nombre_requerido' || $_GET['msg'] == 'nombre_invalido'): ?>
+        <div class="alert alert-danger alert-dismissible fade show">El nombre solo debe contener letras (máximo 100 caracteres).<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'error_propio'): ?>
+        <div class="alert alert-warning alert-dismissible fade show">No puedes desactivar tu propia cuenta.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'error'): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-03:</strong> Error interno. Intente nuevamente.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php endif; ?>
 <?php endif; ?>
 
 <div class="card shadow-sm">
@@ -49,12 +50,14 @@
                                 </td>
                                 <td><?php echo $user->email; ?></td>
                                 <td>
-                                    <?php if($user->rol == 'admin'): ?>
-                                        <span class="badge bg-danger">ADMINISTRADOR</span>
-                                    <?php elseif($user->rol == 'tecnico'): ?>
-                                        <span class="badge bg-info text-dark">TÉCNICO</span>
+                                    <?php if($user->rol == 'Admin'): ?>
+                                        <span class="badge bg-danger">ADMIN</span>
+                                    <?php elseif($user->rol == 'Jefe'): ?>
+                                        <span class="badge bg-dark">JEFE</span>
+                                    <?php elseif($user->rol == 'Recepcionista'): ?>
+                                        <span class="badge bg-success">RECEPCIONISTA</span>
                                     <?php else: ?>
-                                        <span class="badge bg-success">VENDEDOR</span>
+                                        <span class="badge bg-info text-dark">MECÁNICO</span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
@@ -116,9 +119,10 @@
                     <div class="mb-3">
                         <label class="form-label">Rol *</label>
                         <select class="form-select" name="rol" id="rol" required>
-                            <option value="tecnico">Técnico</option>
-                            <option value="vendedor">Vendedor</option>
-                            <option value="admin">Administrador</option>
+                            <option value="Recepcionista">Recepcionista</option>
+                            <option value="Mecánico">Mecánico</option>
+                            <option value="Admin">Administrador</option>
+                            <option value="Jefe">Jefe de Taller</option>
                         </select>
                     </div>
                 </div>

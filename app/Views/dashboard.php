@@ -1,5 +1,9 @@
 <?php require_once __DIR__ . '/partials/header.php'; ?>
 
+<?php if (isset($_GET['msg']) && $_GET['msg'] == 'no_autorizado'): ?>
+    <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-25:</strong> No tiene permisos suficientes para realizar esta acción.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+<?php endif; ?>
+
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Panel de Control</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
