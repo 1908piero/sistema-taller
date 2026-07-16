@@ -5,9 +5,19 @@ use App\Models\Usuario;
 
 class UsuarioController extends BaseController {
 
+    private $rolesPermitidos = ['admin', 'tecnico', 'vendedor'];
+
     private function verificarPermiso() {
         if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
             header('Location: /?msg=no_autorizado');
+            exit;
+        }
+    }
+
+    // RF-13: Validar que el rol sea uno de los permitidos
+    private function validarRol($rol) {
+        if (!in_array($rol, $this->rolesPermitidos)) {
+            header('Location: /usuarios?msg=rol_invalido');
             exit;
         }
     }
@@ -28,6 +38,9 @@ class UsuarioController extends BaseController {
         $this->verificarPermiso();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // RF-13: Validar rol permitido
+            $this->validarRol($_POST['rol']);
+
             $data = [
                 'nombre' => $_POST['nombre'],
                 'email' => $_POST['email'],
@@ -57,6 +70,9 @@ class UsuarioController extends BaseController {
         $this->verificarPermiso();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // RF-13: Validar rol permitido
+            $this->validarRol($_POST['rol']);
+
             $id = $_POST['id'];
             $userModel = new Usuario();
             $anterior = $userModel->getById($id);

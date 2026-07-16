@@ -17,6 +17,7 @@
             elseif($_GET['msg'] == 'error_propio') echo "No puedes desactivar tu propia cuenta.";
             elseif($_GET['msg'] == 'email_duplicado') echo "<strong>RF-12:</strong> El correo electrónico ya está registrado por otro usuario. Use uno diferente.";
             elseif($_GET['msg'] == 'estado_cambiado') echo "Estado de usuario actualizado.";
+            elseif($_GET['msg'] == 'rol_invalido') echo "<strong>RF-13:</strong> El rol seleccionado no es válido. Seleccione Administrador, Técnico o Vendedor.";
             else echo "Operación realizada.";
         ?>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
