@@ -4,11 +4,7 @@ namespace App\Controllers;
 use App\Models\Reporte;
 use Dompdf\Dompdf;
 use Dompdf\Options;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Font;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
+
 
 class ReporteController extends BaseController {
 
@@ -88,72 +84,38 @@ class ReporteController extends BaseController {
         $fechaFin = $_GET['hasta'] ?? date('Y-m-d');
         $reporteCompleto = $reporteModel->getReporteCompleto($fechaInicio, $fechaFin);
 
-        $spreadsheet = new Spreadsheet();
-        $spreadsheet->removeSheetByIndex(0);
+        header('Content-Type: application/vnd.ms-excel; charset=utf-8');
+        header('Content-Disposition: attachment; filename="Reporte_' . $fechaInicio . '_a_' . $fechaFin . '.xls"');
+
+        echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">';
+        echo '<head><meta charset="UTF-8"><style>td,th{border:1px solid #999;padding:4px;font-size:11pt;font-family:Calibri,sans-serif}</style></head><body>';
+        echo '<h2>REPORTE GERENCIAL - ' . $fechaInicio . ' a ' . $fechaFin . '</h2>';
 
         // --- Hoja: Ventas ---
-        $sheet = $spreadsheet->createSheet();
-        $sheet->setTitle('Ventas');
-        $sheet->setCellValue('A1', 'REPORTE GERENCIAL - ' . $fechaInicio . ' a ' . $fechaFin);
-        $sheet->mergeCells('A1:D1');
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
-        $sheet->setCellValue('A3', '#');
-        $sheet->setCellValue('B3', 'Cliente');
-        $sheet->setCellValue('C3', 'Fecha');
-        $sheet->setCellValue('D3', 'Total');
-        $sheet->getStyle('A3:D3')->getFont()->setBold(true);
-        $fila = 4;
+        echo '<table><caption style="font-weight:bold;font-size:13pt;margin-top:15px">Ventas</caption>';
+        echo '<tr><th>#</th><th>Cliente</th><th>Fecha</th><th>Total</th></tr>';
         foreach ($reporteCompleto['ventas'] as $v) {
-            $sheet->setCellValue('A' . $fila, $v->id);
-            $sheet->setCellValue('B' . $fila, $v->cliente_nombre ?? 'General');
-            $sheet->setCellValue('C' . $fila, $v->fecha);
-            $sheet->setCellValue('D' . $fila, number_format($v->total, 2));
-            $fila++;
+            echo '<tr><td>' . $v->id . '</td><td>' . ($v->cliente_nombre ?? 'General') . '</td><td>' . $v->fecha . '</td><td>S/ ' . number_format($v->total, 2) . '</td></tr>';
         }
-        foreach (range('A', 'D') as $col) {
-            $sheet->getColumnDimension($col)->setAutoSize(true);
-        }
+        echo '</table>';
 
         // --- Hoja: Órdenes ---
-        $sheet2 = $spreadsheet->createSheet();
-        $sheet2->setTitle('Órdenes');
-        $sheet2->setCellValue('A1', '# Orden');
-        $sheet2->setCellValue('B1', 'Cliente');
-        $sheet2->setCellValue('C1', 'Total');
-        $sheet2->getStyle('A1:C1')->getFont()->setBold(true);
-        $fila = 2;
+        echo '<table><caption style="font-weight:bold;font-size:13pt;margin-top:15px">Órdenes</caption>';
+        echo '<tr><th># Orden</th><th>Cliente</th><th>Total</th></tr>';
         foreach ($reporteCompleto['ordenes'] as $o) {
-            $sheet2->setCellValue('A' . $fila, 'ORD-' . str_pad($o->id, 4, '0', STR_PAD_LEFT));
-            $sheet2->setCellValue('B' . $fila, $o->cliente_nombre);
-            $sheet2->setCellValue('C' . $fila, number_format($o->total, 2));
-            $fila++;
+            echo '<tr><td>ORD-' . str_pad($o->id, 4, '0', STR_PAD_LEFT) . '</td><td>' . $o->cliente_nombre . '</td><td>S/ ' . number_format($o->total, 2) . '</td></tr>';
         }
-        foreach (range('A', 'C') as $col) {
-            $sheet2->getColumnDimension($col)->setAutoSize(true);
-        }
+        echo '</table>';
 
         // --- Hoja: Stock Bajo ---
-        $sheet3 = $spreadsheet->createSheet();
-        $sheet3->setTitle('Stock Bajo');
-        $sheet3->setCellValue('A1', 'Producto');
-        $sheet3->setCellValue('B1', 'Stock Actual');
-        $sheet3->setCellValue('C1', 'Stock Mínimo');
-        $sheet3->getStyle('A1:C1')->getFont()->setBold(true);
-        $fila = 2;
+        echo '<table><caption style="font-weight:bold;font-size:13pt;margin-top:15px">Stock Bajo</caption>';
+        echo '<tr><th>Producto</th><th>Stock Actual</th><th>Stock Mínimo</th></tr>';
         foreach ($reporteCompleto['stock_bajo'] as $p) {
-            $sheet3->setCellValue('A' . $fila, $p->nombre);
-            $sheet3->setCellValue('B' . $fila, $p->stock);
-            $sheet3->setCellValue('C' . $fila, $p->stock_minimo ?? 5);
-            $fila++;
+            echo '<tr><td>' . $p->nombre . '</td><td>' . $p->stock . '</td><td>' . ($p->stock_minimo ?? 5) . '</td></tr>';
         }
-        foreach (range('A', 'C') as $col) {
-            $sheet3->getColumnDimension($col)->setAutoSize(true);
-        }
+        echo '</table>';
 
-        $writer = new Xlsx($spreadsheet);
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="Reporte_' . $fechaInicio . '_a_' . $fechaFin . '.xlsx"');
-        $writer->save('php://output');
+        echo '</body></html>';
         exit;
     }
 
