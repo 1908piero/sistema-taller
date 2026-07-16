@@ -13,12 +13,14 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
 CREATE TABLE IF NOT EXISTS `clientes` (
   `id` int NOT NULL AUTO_INCREMENT,
   `nombre` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `dni` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `telefono` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `direccion` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `email` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `estado` tinyint(1) DEFAULT '1',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `dni` (`dni`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `configuracion` (
@@ -45,6 +47,7 @@ CREATE TABLE IF NOT EXISTS `productos` (
   `precio_compra` decimal(10,2) DEFAULT NULL,
   `precio_venta` decimal(10,2) DEFAULT NULL,
   `stock` int DEFAULT '0',
+  `stock_minimo` int DEFAULT '5',
   `categoria` enum('repuesto','accesorio','equipo') COLLATE utf8mb4_unicode_ci DEFAULT 'repuesto',
   `imagen` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -67,6 +70,7 @@ CREATE TABLE IF NOT EXISTS `vehiculos` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `estado` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_placa` (`placa`),
   KEY `cliente_id` (`cliente_id`),
   CONSTRAINT `vehiculos_ibfk_1` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -87,6 +91,9 @@ CREATE TABLE IF NOT EXISTS `ordenes_servicio` (
   `equipo_serie` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `falla_reportada` text COLLATE utf8mb4_unicode_ci,
   `observaciones_tecnicas` text COLLATE utf8mb4_unicode_ci,
+  `diagnostico` text COLLATE utf8mb4_unicode_ci,
+  `fecha_entrega` datetime DEFAULT NULL,
+  `fecha_salida` datetime DEFAULT NULL,
   `costo_mano_obra` decimal(10,2) DEFAULT '0.00',
   `total` decimal(10,2) DEFAULT '0.00',
   PRIMARY KEY (`id`),
@@ -198,6 +205,57 @@ CREATE TABLE IF NOT EXISTS `pagos` (
   CONSTRAINT `pagos_ibfk_1` FOREIGN KEY (`orden_id`) REFERENCES `ordenes_servicio` (`id`),
   CONSTRAINT `pagos_ibfk_2` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`),
   CONSTRAINT `pagos_ibfk_3` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `servicios` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `categoria` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'General',
+  `precio` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `descripcion` text COLLATE utf8mb4_unicode_ci,
+  `estado` tinyint(1) DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `orden_servicios` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `orden_id` int NOT NULL,
+  `servicio_id` int DEFAULT NULL,
+  `cantidad` int DEFAULT '1',
+  `precio_unitario` decimal(10,2) DEFAULT '0.00',
+  `subtotal` decimal(10,2) DEFAULT '0.00',
+  `tecnico_asignado` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `orden_id` (`orden_id`),
+  KEY `servicio_id` (`servicio_id`),
+  CONSTRAINT `orden_servicios_ibfk_1` FOREIGN KEY (`orden_id`) REFERENCES `ordenes_servicio` (`id`),
+  CONSTRAINT `orden_servicios_ibfk_2` FOREIGN KEY (`servicio_id`) REFERENCES `servicios` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `login_attempts` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `attempts` int DEFAULT '1',
+  `last_attempt` datetime DEFAULT CURRENT_TIMESTAMP,
+  `locked_until` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `audit_log` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `usuario_id` int DEFAULT NULL,
+  `tabla` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `registro_id` int DEFAULT NULL,
+  `accion` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `datos_previos` longtext COLLATE utf8mb4_unicode_ci,
+  `datos_nuevos` longtext COLLATE utf8mb4_unicode_ci,
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `usuario_id` (`usuario_id`),
+  CONSTRAINT `audit_log_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `usuarios` (`id`, `nombre`, `email`, `password`, `rol`, `estado`) VALUES
