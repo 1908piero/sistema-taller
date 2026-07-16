@@ -37,10 +37,35 @@ class ClienteController extends BaseController {
         ]);
     }
 
+    private function validarDatosCliente($data) {
+        // CU-01: Validar campos requeridos
+        if (empty(trim($data['nombre'] ?? ''))) { return 'nombre_requerido'; }
+        if (empty(trim($data['dni'] ?? ''))) { return 'dni_requerido'; }
+        if (empty(trim($data['telefono'] ?? ''))) { return 'telefono_requerido'; }
+
+        // Validar nombre: solo letras y espacios
+        if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $data['nombre'])) { return 'nombre_invalido'; }
+
+        // Validar DNI: exactamente 8 dígitos numéricos
+        if (!preg_match('/^\d{8}$/', $data['dni'])) { return 'dni_invalido'; }
+
+        // Validar teléfono: numérico, hasta 15 dígitos
+        if (!preg_match('/^\d{7,15}$/', $data['telefono'])) { return 'telefono_invalido'; }
+
+        return null;
+    }
+
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $dni = $_POST['dni'] ?? '';
             $clienteModel = new Cliente();
+
+            // CU-01: Validar datos de entrada
+            $error = $this->validarDatosCliente($_POST);
+            if ($error) {
+                header("Location: /clientes?msg=$error");
+                exit;
+            }
 
             // RN-01: Validar DNI duplicado
             if (!empty($dni) && $clienteModel->getByDni($dni)) {
@@ -72,6 +97,13 @@ class ClienteController extends BaseController {
             $dni = $_POST['dni'] ?? '';
             $clienteModel = new Cliente();
             $anterior = $clienteModel->getById($id);
+
+            // CU-01: Validar datos de entrada
+            $error = $this->validarDatosCliente($_POST);
+            if ($error) {
+                header("Location: /clientes?msg=$error");
+                exit;
+            }
 
             // RN-01: Validar DNI duplicado (excluyendo este registro)
             if (!empty($dni) && $clienteModel->getByDni($dni, $id)) {

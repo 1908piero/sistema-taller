@@ -10,16 +10,25 @@
 </div>
 
 <?php if (isset($_GET['msg'])): ?>
-    <div class="alert alert-info alert-dismissible fade show">
-        <?php 
-            if($_GET['msg'] == 'guardado') echo "Cliente registrado exitosamente.";
-            elseif($_GET['msg'] == 'actualizado') echo "Datos del cliente actualizados.";
-            elseif($_GET['msg'] == 'estado_cambiado') echo "El estado del cliente ha cambiado.";
-            elseif($_GET['msg'] == 'dni_duplicado') echo "<strong>RN-01:</strong> Ya existe un cliente con ese DNI. No se permiten duplicados.";
-            else echo "Operación realizada correctamente.";
-        ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+    <?php if($_GET['msg'] == 'guardado'): ?>
+        <div class="alert alert-success alert-dismissible fade show"><strong>MSJ-01:</strong> Cliente registrado exitosamente.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'actualizado'): ?>
+        <div class="alert alert-success alert-dismissible fade show">Datos del cliente actualizados.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'estado_cambiado'): ?>
+        <div class="alert alert-info alert-dismissible fade show">El estado del cliente ha cambiado.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'dni_duplicado'): ?>
+        <div class="alert alert-warning alert-dismissible fade show"><strong>MSJ-02 (RN-01):</strong> El cliente ya se encuentra registrado. Verifique el DNI e intente nuevamente.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'error'): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-03:</strong> Error interno. Intente nuevamente.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'nombre_requerido' || $_GET['msg'] == 'dni_requerido' || $_GET['msg'] == 'telefono_requerido'): ?>
+        <div class="alert alert-danger alert-dismissible fade show">Complete todos los campos obligatorios: Nombre, DNI y Teléfono.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'nombre_invalido'): ?>
+        <div class="alert alert-danger alert-dismissible fade show">El nombre solo debe contener letras y espacios.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'dni_invalido'): ?>
+        <div class="alert alert-danger alert-dismissible fade show">El DNI debe contener exactamente 8 dígitos numéricos.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'telefono_invalido'): ?>
+        <div class="alert alert-danger alert-dismissible fade show">El teléfono debe contener solo números (7 a 15 dígitos).<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php endif; ?>
 <?php endif; ?>
 
 <div class="card shadow-sm">
@@ -104,8 +113,8 @@
                             <input type="text" class="form-control" name="dni" id="dni" required>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Teléfono</label>
-                            <input type="text" class="form-control" name="telefono" id="telefono">
+                            <label class="form-label">Teléfono *</label>
+                            <input type="text" class="form-control" name="telefono" id="telefono" required>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Email</label>
