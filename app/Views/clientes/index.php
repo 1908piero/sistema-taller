@@ -20,14 +20,18 @@
         <div class="alert alert-warning alert-dismissible fade show"><strong>MSJ-02 (RN-01):</strong> El cliente ya se encuentra registrado. Verifique el DNI e intente nuevamente.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     <?php elseif($_GET['msg'] == 'error'): ?>
         <div class="alert alert-danger alert-dismissible fade show"><strong>MSJ-03:</strong> Error interno. Intente nuevamente.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-    <?php elseif($_GET['msg'] == 'nombre_requerido' || $_GET['msg'] == 'dni_requerido' || $_GET['msg'] == 'telefono_requerido'): ?>
-        <div class="alert alert-danger alert-dismissible fade show">Complete todos los campos obligatorios: Nombre, DNI y Teléfono.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'nombre_requerido' || $_GET['msg'] == 'dni_requerido' || $_GET['msg'] == 'telefono_requerido' || $_GET['msg'] == 'codigo_requerido'): ?>
+        <div class="alert alert-danger alert-dismissible fade show">Complete todos los campos obligatorios: Código, Nombre, DNI y Teléfono.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     <?php elseif($_GET['msg'] == 'nombre_invalido'): ?>
         <div class="alert alert-danger alert-dismissible fade show">El nombre solo debe contener letras y espacios.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     <?php elseif($_GET['msg'] == 'dni_invalido'): ?>
         <div class="alert alert-danger alert-dismissible fade show">El DNI debe contener exactamente 8 dígitos numéricos.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     <?php elseif($_GET['msg'] == 'telefono_invalido'): ?>
         <div class="alert alert-danger alert-dismissible fade show">El teléfono debe contener solo números (7 a 15 dígitos).<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'codigo_invalido'): ?>
+        <div class="alert alert-danger alert-dismissible fade show">El código debe tener exactamente 10 caracteres alfanuméricos.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php elseif($_GET['msg'] == 'codigo_duplicado'): ?>
+        <div class="alert alert-warning alert-dismissible fade show">El código de cliente ya está en uso. Ingrese uno diferente.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     <?php endif; ?>
 <?php endif; ?>
 
@@ -37,6 +41,7 @@
             <table class="table table-hover align-middle" id="datatable">
                 <thead class="table-dark">
                     <tr>
+                        <th>Código</th>
                         <th>Nombre</th>
                         <th>DNI / RUC</th>
                         <th>Teléfono</th>
@@ -49,6 +54,7 @@
                     <?php if(!empty($clientes)): ?>
                         <?php foreach($clientes as $cliente): ?>
                             <tr class="<?php echo ($cliente->estado == 0) ? 'table-secondary text-muted' : ''; ?>">
+                                <td><code><?php echo htmlspecialchars($cliente->codigo ?? '-'); ?></code></td>
                                 <td>
                                     <strong><?php echo $cliente->nombre; ?></strong><br>
                                     <small class="text-muted"><?php echo $cliente->direccion; ?></small>
@@ -103,18 +109,24 @@
             <form id="formCliente" action="/clientes/guardar" method="POST">
                 <input type="hidden" name="id" id="clienteId">
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Nombre Completo *</label>
-                        <input type="text" class="form-control" name="nombre" id="nombre" required>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Código * <small>(10 caracteres alfanumérico)</small></label>
+                            <input type="text" class="form-control" name="codigo" id="codigo" maxlength="10" required placeholder="CLI-000001">
+                        </div>
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">Nombre Completo *</label>
+                            <input type="text" class="form-control" name="nombre" id="nombre" required>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">DNI / RUC * <small>(identificador único)</small></label>
-                            <input type="text" class="form-control" name="dni" id="dni" required>
+                            <label class="form-label">DNI * <small>(8 dígitos)</small></label>
+                            <input type="text" class="form-control" name="dni" id="dni" maxlength="8" required>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Teléfono *</label>
-                            <input type="text" class="form-control" name="telefono" id="telefono" required>
+                            <input type="text" class="form-control" name="telefono" id="telefono" maxlength="15" required>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Email</label>
@@ -155,6 +167,7 @@
 
     function editarCliente(cliente) {
         document.getElementById('clienteId').value = cliente.id;
+        document.getElementById('codigo').value = cliente.codigo || '';
         document.getElementById('nombre').value = cliente.nombre;
         document.getElementById('dni').value = cliente.dni || '';
         document.getElementById('telefono').value = cliente.telefono;

@@ -77,6 +77,19 @@ class Cliente extends BaseModel {
         return $stmt->fetch(PDO::FETCH_OBJ)->c;
     }
 
+    // CU-01: Buscar por código (validar duplicados)
+    public function getByCodigo($codigo, $excluirId = null) {
+        try {
+            $sql = "SELECT id FROM clientes WHERE codigo = :cod";
+            if ($excluirId) { $sql .= " AND id != :eid"; }
+            $stmt = $this->db->prepare($sql);
+            $params = [':cod' => $codigo];
+            if ($excluirId) { $params[':eid'] = $excluirId; }
+            $stmt->execute($params);
+            return $stmt->fetch(PDO::FETCH_OBJ);
+        } catch (\Exception $e) { return null; }
+    }
+
     // RN-01: Buscar por DNI (validar duplicados)
     public function getByDni($dni, $excluirId = null) {
         try {
@@ -92,9 +105,10 @@ class Cliente extends BaseModel {
 
     public function create($data) {
         try {
-            $sql = "INSERT INTO clientes (nombre, dni, telefono, email, direccion, estado) VALUES (:nombre, :dni, :telefono, :email, :direccion, 1)";
+            $sql = "INSERT INTO clientes (codigo, nombre, dni, telefono, email, direccion, estado) VALUES (:codigo, :nombre, :dni, :telefono, :email, :direccion, 1)";
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
+                ':codigo' => $data['codigo'],
                 ':nombre' => $data['nombre'], ':dni' => $data['dni'] ?? null,
                 ':telefono' => $data['telefono'], ':email' => $data['email'],
                 ':direccion' => $data['direccion']
@@ -104,9 +118,10 @@ class Cliente extends BaseModel {
 
     public function update($data) {
         try {
-            $sql = "UPDATE clientes SET nombre=:nombre, dni=:dni, telefono=:telefono, email=:email, direccion=:direccion WHERE id=:id";
+            $sql = "UPDATE clientes SET codigo=:codigo, nombre=:nombre, dni=:dni, telefono=:telefono, email=:email, direccion=:direccion WHERE id=:id";
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
+                ':codigo' => $data['codigo'],
                 ':nombre' => $data['nombre'], ':dni' => $data['dni'] ?? null,
                 ':telefono' => $data['telefono'], ':email' => $data['email'],
                 ':direccion' => $data['direccion'], ':id' => $data['id']

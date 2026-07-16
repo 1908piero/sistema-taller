@@ -40,11 +40,15 @@ class ClienteController extends BaseController {
     private function validarDatosCliente($data) {
         // CU-01: Validar campos requeridos
         if (empty(trim($data['nombre'] ?? ''))) { return 'nombre_requerido'; }
+        if (empty(trim($data['codigo'] ?? ''))) { return 'codigo_requerido'; }
         if (empty(trim($data['dni'] ?? ''))) { return 'dni_requerido'; }
         if (empty(trim($data['telefono'] ?? ''))) { return 'telefono_requerido'; }
 
         // Validar nombre: solo letras y espacios
         if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $data['nombre'])) { return 'nombre_invalido'; }
+
+        // CU-01: Validar código: alfanumérico, exactamente 10 caracteres
+        if (!preg_match('/^[A-Za-z0-9]{10}$/', $data['codigo'])) { return 'codigo_invalido'; }
 
         // Validar DNI: exactamente 8 dígitos numéricos
         if (!preg_match('/^\d{8}$/', $data['dni'])) { return 'dni_invalido'; }
@@ -58,12 +62,19 @@ class ClienteController extends BaseController {
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $dni = $_POST['dni'] ?? '';
+            $codigo = strtoupper(trim($_POST['codigo'] ?? ''));
             $clienteModel = new Cliente();
 
             // CU-01: Validar datos de entrada
             $error = $this->validarDatosCliente($_POST);
             if ($error) {
                 header("Location: /clientes?msg=$error");
+                exit;
+            }
+
+            // CU-01: Validar código único
+            if ($clienteModel->getByCodigo($codigo)) {
+                header('Location: /clientes?msg=codigo_duplicado');
                 exit;
             }
 
@@ -74,6 +85,7 @@ class ClienteController extends BaseController {
             }
 
             $data = [
+                'codigo' => $codigo,
                 'nombre' => $_POST['nombre'],
                 'dni' => $dni,
                 'telefono' => $_POST['telefono'],
@@ -95,6 +107,7 @@ class ClienteController extends BaseController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = $_POST['id'];
             $dni = $_POST['dni'] ?? '';
+            $codigo = strtoupper(trim($_POST['codigo'] ?? ''));
             $clienteModel = new Cliente();
             $anterior = $clienteModel->getById($id);
 
@@ -102,6 +115,12 @@ class ClienteController extends BaseController {
             $error = $this->validarDatosCliente($_POST);
             if ($error) {
                 header("Location: /clientes?msg=$error");
+                exit;
+            }
+
+            // CU-01: Validar código único (excluyendo este registro)
+            if ($clienteModel->getByCodigo($codigo, $id)) {
+                header('Location: /clientes?msg=codigo_duplicado');
                 exit;
             }
 
@@ -113,6 +132,7 @@ class ClienteController extends BaseController {
 
             $data = [
                 'id' => $id,
+                'codigo' => $codigo,
                 'nombre' => $_POST['nombre'],
                 'dni' => $dni,
                 'telefono' => $_POST['telefono'],
