@@ -15,6 +15,8 @@
             if($_GET['msg'] == 'guardado') echo "Usuario creado correctamente.";
             elseif($_GET['msg'] == 'actualizado') echo "Datos actualizados.";
             elseif($_GET['msg'] == 'error_propio') echo "No puedes desactivar tu propia cuenta.";
+            elseif($_GET['msg'] == 'email_duplicado') echo "<strong>RF-12:</strong> El correo electrónico ya está registrado por otro usuario. Use uno diferente.";
+            elseif($_GET['msg'] == 'estado_cambiado') echo "Estado de usuario actualizado.";
             else echo "Operación realizada.";
         ?>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>

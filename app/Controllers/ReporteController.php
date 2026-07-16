@@ -57,6 +57,45 @@ class ReporteController extends BaseController {
         ]);
     }
 
+    // RF-10: Exportar reporte a Excel (CSV)
+    public function exportarExcel() {
+        $reporteModel = new Reporte();
+        $fechaInicio = $_GET['desde'] ?? date('Y-m-01');
+        $fechaFin = $_GET['hasta'] ?? date('Y-m-d');
+        $reporteCompleto = $reporteModel->getReporteCompleto($fechaInicio, $fechaFin);
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="Reporte_' . $fechaInicio . '_a_' . $fechaFin . '.csv"');
+        $output = fopen('php://output', 'w');
+        fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF)); // BOM UTF-8
+
+        fputcsv($output, ['REPORTE GERENCIAL - ' . $fechaInicio . ' a ' . $fechaFin]);
+        fputcsv($output, []);
+
+        fputcsv($output, ['VENTAS']);
+        fputcsv($output, ['#', 'Cliente', 'Fecha', 'Total']);
+        foreach ($reporteCompleto['ventas'] as $v) {
+            fputcsv($output, [$v->id, $v->cliente_nombre ?? 'General', $v->fecha, number_format($v->total, 2)]);
+        }
+        fputcsv($output, []);
+
+        fputcsv($output, ['ORDENES ENTREGADAS']);
+        fputcsv($output, ['#', 'Cliente', 'Total']);
+        foreach ($reporteCompleto['ordenes'] as $o) {
+            fputcsv($output, ['ORD-' . str_pad($o->id, 4, '0', STR_PAD_LEFT), $o->cliente_nombre, number_format($o->total, 2)]);
+        }
+        fputcsv($output, []);
+
+        fputcsv($output, ['ALERTAS STOCK BAJO']);
+        fputcsv($output, ['Producto', 'Stock', 'Stock Minimo']);
+        foreach ($reporteCompleto['stock_bajo'] as $p) {
+            fputcsv($output, [$p->nombre, $p->stock, $p->stock_minimo ?? 5]);
+        }
+
+        fclose($output);
+        exit;
+    }
+
     // RF-10: Exportar reporte a PDF
     public function exportarPdf() {
         $reporteModel = new Reporte();

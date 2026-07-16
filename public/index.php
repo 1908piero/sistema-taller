@@ -91,6 +91,7 @@ $router->post('/gastos/eliminar', [GastoController::class, 'eliminar']);
 // Reportes
 $router->get('/reportes', [ReporteController::class, 'index']);
 $router->get('/reportes/exportar-pdf', [ReporteController::class, 'exportarPdf']);
+$router->get('/reportes/exportar-excel', [ReporteController::class, 'exportarExcel']);
 
 // Usuarios
 $router->get('/usuarios', [UsuarioController::class, 'index']);

@@ -36,6 +36,13 @@ class UsuarioController extends BaseController {
             ];
 
             $userModel = new Usuario();
+
+            // RF-12: Validar email único
+            if ($userModel->emailExiste($data['email'])) {
+                header('Location: /usuarios?msg=email_duplicado');
+                exit;
+            }
+
             if ($userModel->create($data)) {
                 $id = $this->db->lastInsertId();
                 $this->registrarAuditoria('usuarios', $id, 'crear', null, ['nombre' => $data['nombre'], 'email' => $data['email'], 'rol' => $data['rol']]);
@@ -61,6 +68,12 @@ class UsuarioController extends BaseController {
                 'password' => $_POST['password'],
                 'rol' => $_POST['rol']
             ];
+
+            // RF-12: Validar email único (excluyendo este usuario)
+            if ($userModel->emailExiste($data['email'], $id)) {
+                header('Location: /usuarios?msg=email_duplicado');
+                exit;
+            }
 
             if ($userModel->update($data)) {
                 $this->registrarAuditoria('usuarios', $id, 'actualizar', $anterior, ['nombre' => $data['nombre'], 'email' => $data['email'], 'rol' => $data['rol']]);

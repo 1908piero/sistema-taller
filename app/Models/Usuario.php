@@ -27,6 +27,18 @@ class Usuario extends BaseModel {
         }
     }
 
+    public function emailExiste($email, $excluirId = null) {
+        try {
+            $sql = "SELECT id FROM usuarios WHERE email = :email";
+            if ($excluirId) { $sql .= " AND id != :eid"; }
+            $stmt = $this->db->prepare($sql);
+            $params = [':email' => $email];
+            if ($excluirId) { $params[':eid'] = $excluirId; }
+            $stmt->execute($params);
+            return $stmt->fetch(PDO::FETCH_OBJ) ? true : false;
+        } catch (\Exception $e) { return false; }
+    }
+
     // --- NUEVO: Listar todos los usuarios ---
     public function getAll() {
         try {
