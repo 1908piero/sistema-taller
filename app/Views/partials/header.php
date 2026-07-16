@@ -28,7 +28,24 @@
         
         /* Ajustes Select2 */
         .select2-container--bootstrap-5 .select2-selection { border-color: #dee2e6; }
+
+        /* RNF-05: Control de tamaño de fuente */
+        .font-size-sm { font-size: 0.85rem; }
+        .font-size-md { font-size: 1rem; }
+        .font-size-lg { font-size: 1.15rem; }
+        .font-size-controls { font-size: 0.8rem; }
+        .font-size-controls .btn { padding: 0.15rem 0.4rem; font-size: 0.7rem; line-height: 1; }
     </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var size = localStorage.getItem('fontSize') || 'md';
+            document.body.className = 'font-size-' + size;
+        });
+        function cambiarFontSize(t) {
+            document.body.className = 'font-size-' + t;
+            localStorage.setItem('fontSize', t);
+        }
+    </script>
 </head>
 <body>
 
@@ -80,6 +97,12 @@
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item text-danger" href="/logout"><i class="fa-solid fa-sign-out-alt me-2"></i> Cerrar Sesión</a></li>
             </ul>
+        </div>
+        <div class="font-size-controls text-center mt-2">
+            <span class="text-muted small">Tamaño: </span>
+            <button class="btn btn-outline-light btn-sm" onclick="cambiarFontSize('sm')" title="Pequeño">A-</button>
+            <button class="btn btn-outline-light btn-sm" onclick="cambiarFontSize('md')" title="Mediano">A</button>
+            <button class="btn btn-outline-light btn-sm" onclick="cambiarFontSize('lg')" title="Grande">A+</button>
         </div>
     </div>
 

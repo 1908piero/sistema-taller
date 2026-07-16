@@ -54,7 +54,7 @@ class Usuario extends BaseModel {
     public function create($data) {
         try {
             // Encriptamos la contraseña antes de guardar
-            $hash = password_hash($data['password'], PASSWORD_DEFAULT);
+            $hash = password_hash($data['password'], PASSWORD_BCRYPT, ['cost' => 12]);
             
             $sql = "INSERT INTO usuarios (nombre, email, password, rol, estado) VALUES (:nombre, :email, :pass, :rol, 1)";
             $stmt = $this->db->prepare($sql);
@@ -74,7 +74,7 @@ class Usuario extends BaseModel {
         try {
             // Si viene password, lo actualizamos (encriptado). Si no, dejamos el anterior.
             if (!empty($data['password'])) {
-                $hash = password_hash($data['password'], PASSWORD_DEFAULT);
+                $hash = password_hash($data['password'], PASSWORD_BCRYPT, ['cost' => 12]);
                 $sql = "UPDATE usuarios SET nombre=:nombre, email=:email, password=:pass, rol=:rol WHERE id=:id";
                 $params = [
                     ':nombre' => $data['nombre'], ':email' => $data['email'],

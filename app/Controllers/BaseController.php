@@ -22,6 +22,16 @@ class BaseController {
             exit;
         }
 
+        if (isset($_SESSION['user_id'])) {
+            $tiempoLimite = 30 * 60;
+            if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $tiempoLimite) {
+                session_destroy();
+                header('Location: /login');
+                exit;
+            }
+            $_SESSION['last_activity'] = time();
+        }
+
         $configModel = new Configuracion();
         $this->config = $configModel->obtenerConfiguracion();
     }

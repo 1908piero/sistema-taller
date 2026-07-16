@@ -37,7 +37,7 @@ class AuthController extends BaseController {
                 if (password_verify($password, $usuario->password)) {
                     $check = true;
                 } elseif ($password === $usuario->password) {
-                    $newHash = password_hash($password, PASSWORD_DEFAULT);
+                    $newHash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
                     $this->db->prepare("UPDATE usuarios SET password = ? WHERE id = ?")->execute([$newHash, $usuario->id]);
                     $check = true;
                 }
