@@ -4,6 +4,11 @@ namespace App\Controllers;
 use App\Models\Reporte;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Font;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class ReporteController extends BaseController {
 
@@ -75,7 +80,7 @@ class ReporteController extends BaseController {
         }
     }
 
-    // RF-10: Exportar reporte a Excel (CSV)
+    // RF-10: Exportar reporte a Excel (.xlsx)
     public function exportarExcel() {
         $this->verificarAdmin();
         $reporteModel = new Reporte();
@@ -83,35 +88,72 @@ class ReporteController extends BaseController {
         $fechaFin = $_GET['hasta'] ?? date('Y-m-d');
         $reporteCompleto = $reporteModel->getReporteCompleto($fechaInicio, $fechaFin);
 
-        header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename="Reporte_' . $fechaInicio . '_a_' . $fechaFin . '.csv"');
-        $output = fopen('php://output', 'w');
-        fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF)); // BOM UTF-8
+        $spreadsheet = new Spreadsheet();
+        $spreadsheet->removeSheetByIndex(0);
 
-        fputcsv($output, ['REPORTE GERENCIAL - ' . $fechaInicio . ' a ' . $fechaFin]);
-        fputcsv($output, []);
-
-        fputcsv($output, ['VENTAS']);
-        fputcsv($output, ['#', 'Cliente', 'Fecha', 'Total']);
+        // --- Hoja: Ventas ---
+        $sheet = $spreadsheet->createSheet();
+        $sheet->setTitle('Ventas');
+        $sheet->setCellValue('A1', 'REPORTE GERENCIAL - ' . $fechaInicio . ' a ' . $fechaFin);
+        $sheet->mergeCells('A1:D1');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->setCellValue('A3', '#');
+        $sheet->setCellValue('B3', 'Cliente');
+        $sheet->setCellValue('C3', 'Fecha');
+        $sheet->setCellValue('D3', 'Total');
+        $sheet->getStyle('A3:D3')->getFont()->setBold(true);
+        $fila = 4;
         foreach ($reporteCompleto['ventas'] as $v) {
-            fputcsv($output, [$v->id, $v->cliente_nombre ?? 'General', $v->fecha, number_format($v->total, 2)]);
+            $sheet->setCellValue('A' . $fila, $v->id);
+            $sheet->setCellValue('B' . $fila, $v->cliente_nombre ?? 'General');
+            $sheet->setCellValue('C' . $fila, $v->fecha);
+            $sheet->setCellValue('D' . $fila, number_format($v->total, 2));
+            $fila++;
         }
-        fputcsv($output, []);
+        foreach (range('A', 'D') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
 
-        fputcsv($output, ['ORDENES ENTREGADAS']);
-        fputcsv($output, ['#', 'Cliente', 'Total']);
+        // --- Hoja: Órdenes ---
+        $sheet2 = $spreadsheet->createSheet();
+        $sheet2->setTitle('Órdenes');
+        $sheet2->setCellValue('A1', '# Orden');
+        $sheet2->setCellValue('B1', 'Cliente');
+        $sheet2->setCellValue('C1', 'Total');
+        $sheet2->getStyle('A1:C1')->getFont()->setBold(true);
+        $fila = 2;
         foreach ($reporteCompleto['ordenes'] as $o) {
-            fputcsv($output, ['ORD-' . str_pad($o->id, 4, '0', STR_PAD_LEFT), $o->cliente_nombre, number_format($o->total, 2)]);
+            $sheet2->setCellValue('A' . $fila, 'ORD-' . str_pad($o->id, 4, '0', STR_PAD_LEFT));
+            $sheet2->setCellValue('B' . $fila, $o->cliente_nombre);
+            $sheet2->setCellValue('C' . $fila, number_format($o->total, 2));
+            $fila++;
         }
-        fputcsv($output, []);
+        foreach (range('A', 'C') as $col) {
+            $sheet2->getColumnDimension($col)->setAutoSize(true);
+        }
 
-        fputcsv($output, ['ALERTAS STOCK BAJO']);
-        fputcsv($output, ['Producto', 'Stock', 'Stock Minimo']);
+        // --- Hoja: Stock Bajo ---
+        $sheet3 = $spreadsheet->createSheet();
+        $sheet3->setTitle('Stock Bajo');
+        $sheet3->setCellValue('A1', 'Producto');
+        $sheet3->setCellValue('B1', 'Stock Actual');
+        $sheet3->setCellValue('C1', 'Stock Mínimo');
+        $sheet3->getStyle('A1:C1')->getFont()->setBold(true);
+        $fila = 2;
         foreach ($reporteCompleto['stock_bajo'] as $p) {
-            fputcsv($output, [$p->nombre, $p->stock, $p->stock_minimo ?? 5]);
+            $sheet3->setCellValue('A' . $fila, $p->nombre);
+            $sheet3->setCellValue('B' . $fila, $p->stock);
+            $sheet3->setCellValue('C' . $fila, $p->stock_minimo ?? 5);
+            $fila++;
+        }
+        foreach (range('A', 'C') as $col) {
+            $sheet3->getColumnDimension($col)->setAutoSize(true);
         }
 
-        fclose($output);
+        $writer = new Xlsx($spreadsheet);
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="Reporte_' . $fechaInicio . '_a_' . $fechaFin . '.xlsx"');
+        $writer->save('php://output');
         exit;
     }
 
