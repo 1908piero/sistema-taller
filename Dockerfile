@@ -2,7 +2,7 @@ FROM php:8.2-apache
 
 RUN a2enmod rewrite
 
-RUN docker-php-ext-install pdo pdo_mysql
+RUN docker-php-ext-install pdo pdo_mysql zip xml mbstring
 
 RUN apt-get update && apt-get install -y \
     git unzip libicu-dev libpng-dev libjpeg-dev libfreetype6-dev && \
@@ -16,7 +16,7 @@ WORKDIR /var/www/html
 
 COPY . .
 
-RUN composer install --no-interaction --prefer-dist --no-dev || true
+RUN composer install --no-interaction --prefer-dist --no-dev
 
 RUN mkdir -p public/uploads/logo public/uploads/productos && \
     chmod -R 777 public/uploads
